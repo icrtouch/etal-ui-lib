@@ -1,0 +1,466 @@
+
+
+class DisplayObject{
+
+	
+
+	//Identifiers ----
+	ID = 0;
+	identifier = "";
+	className = "";
+	parentObjectID = 0;
+	parentObject = null;
+	//settings
+	visible = true;
+	clickable = true;
+
+	//Positions -----
+
+	zDepth = 0;
+	relZDepth = 0;
+	pos = {x = 0,y = 0};
+	relpos = {x = 0,y = 0}
+	size = {x = 100,y = 100};
+	color = 0xFFFFFF
+	
+	//graphic looks
+	borderRadius = 0;
+	text = "";
+	fontSize=20;
+	fontColor = 0xFFFFFF;
+	
+	//extra
+	options = {};
+	childObjects=[];
+	
+	//controllers
+	constraint_controller = null;
+	UI = null;
+
+	//events
+	onClick = null 
+	afterPaint = {};
+	beforePaint = {};
+	bindText = null;
+
+	function constructor(ui,options){
+	
+		this.UI = ui;
+
+		this.childObjects = [];
+		
+		//Each newly created object needs a unique ID so parent linking works 
+		UI.objectIDCounter = UI.objectIDCounter + 1;
+		this.ID = UI.objectIDCounter;
+
+		this.parentObjectID = 0;
+		this.parentObject = null
+		
+		//lets just store a copy of options, just cause
+		this.options = options;
+		
+		//NOW we go through all the optional options -----
+		
+		if("identifier" in options){
+			this.identifier = options.identifier;
+		} else {
+			//no identifier, just set it to the ID
+			this.identifier = this.ID;
+		}
+
+		if("className" in options){
+			this.className = options.className;
+		} else {
+			this.className = "";
+		}
+		
+		//this can hide the displayobject
+		if("visible" in options){
+			this.visible = options.visible;
+		} else {
+			this.visible = true;
+		}
+
+		//this adds a hard pass on all click events if false
+		if("clickable" in options){
+			this.clickable = options.clickable;
+		} else {
+			this.clickable = true;
+		}
+		
+		//this will set the position --bare in mind this is a relative position
+		if("position" in options){
+			this.pos = this.options.position;
+		} else {
+			this.pos = {x=0,y=0};
+		}
+		
+		//this will be the size x = width, y = height
+		if("size" in options){
+			this.size = options.size;
+		} else {
+			this.size = {x=0,y=0};
+		}
+		
+		//this indicates the objects local zDepth in relation to parent and child objects
+		if("zDepth" in options){
+			this.zDepth = options.zDepth;
+		} else {
+			this.zDepth = 0;
+		}
+
+		//background colour
+		if("color" in options){
+			this.color = options.color;
+		} else {
+			this.color = Color().white;
+		}
+		
+		//if this has borderradius enabled, it will use this
+		if("borderRadius" in options){
+			this.borderRadius = options.borderRadius;
+		}
+		
+		//if this has a font, it will use this
+		if("fontSize" in options){
+			this.fontSize = options.fontSize;
+		} else {
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options){
+			this.fontColor = options.fontColor;
+		} else {
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options){
+			this.text = options.text;
+		} else {
+			this.text = "";
+		}
+
+		//all objects can have a click handler, not just buttons, this acts much like javascript
+		if("onClick" in options){
+			this.onClick = options.onClick;
+		} else {
+			this.onClick = function(){
+				
+			};
+		}
+
+		if("bindText" in options){
+			this.bindText = options.bindText
+		} else {
+			this.bindText = null
+		}
+
+	
+	}
+	
+	//sets the parent object ID
+	function setParent(object){
+		this.parentObjectID = object.ID;
+	}
+	
+	//this will add a child object to the current display object
+	function addChildObject(object){
+		object.parentObjectID = this.ID;
+		object.parentObject = this;
+		//add to to this objects children array
+		this.childObjects.push(object);
+
+		//also add into 
+
+	}
+
+	//this will remove all display objects from the current displayobject if there are any
+	function removeAllChildObjects(){
+
+		if(this.childObjects.len() > 0){
+			for (local nCount = 0 ; nCount < this.childObjects.len(); nCount++) 
+			{
+				this.childObjects[nCount].removeAllChildObjects();
+
+				this.UI.removeDisplayObject(this.childObjects[nCount].ID);
+				//this needs to be recursive
+				
+			}
+		}
+
+		this.childObjects = null;
+		this.childObjects = [];
+
+	}
+
+	//this removes itself from the UI display object array
+	function removeObj(){
+		this.UI.removeDisplayObject(this.ID)
+	}
+
+	//this will find a child of this object only
+	function findChildObject(identifier){
+		if(childObjects){
+			foreach(item in this.childObjects){
+				if(item.identifier == identifier){
+					return item;
+				}
+			}
+		}
+	}
+	
+	function getParent(){
+		return this.parentObject;
+	}
+	
+	//this will add a constraint controller to the displayobject
+	function setConstraintController(constr){
+		this.constraint_controller = constr
+	}
+
+	
+	function setPosition(x,y){
+		this.pos = {x=x,y=y};
+	}
+	
+	function setSize(x,y){
+		this.size.x = x;
+		this.size.y = y;
+	}
+	
+	//this is the main prepaint function
+	function prepaint(){
+
+		if(this.bindText != null){
+			this.text = this.bindText();
+		}
+
+
+		local Parent = this.getParent();
+
+		//lets calculate relative zDepths for click events so we know who is on top
+		if(Parent != null){	
+			this.relZDepth = this.zDepth + Parent.relZDepth;	
+		} else {
+			//no parent, set as a absolute zDepth that has been given
+			this.relZDepth = this.zDepth;
+		}	
+		
+		this.childObjects.sort(@(a,b) a.zDepth <=> b.zDepth);
+
+
+		//lets sort out all parent/child items now
+		if(Parent != null){
+			//print(Parent.ID);
+			//relative position
+			this.relpos = {x=(this.pos.x+Parent.relpos.x),y=(this.pos.y+Parent.relpos.y)};
+		} else {
+			//absolute position
+			this.relpos = this.pos;
+		}
+		
+		//Run all constraints on object here
+		if(this.constraint_controller){
+			this.constraint_controller.run_constraints(this);
+		}
+		
+		if(this.visible == true){
+			this.paint();
+			if(UI.debug == true){
+				//show debug info
+				this.displayDebug();
+			}
+			
+
+			this.run_child_prepaints(this);
+			//Now run the prepaint functions of all the childrens children children
+
+		}
+	
+		
+	}
+
+	//recursive function yay
+	function run_child_prepaints(object){
+
+			if(object.childObjects.len() > 0){
+				foreach(obj in object.childObjects){
+					obj.prepaint();
+				}
+			}
+
+			return;
+
+	}
+	
+	/* override
+		this is used for if an object also wants to create other objects for its own use, 
+		cant do this in the constructor as not all information is available
+	*/
+	function displayDebug(){
+
+			local nMainFont = ICR_CreateFont("Arial", 12);
+			local nCurFont = ICR_SelectFont(nMainFont);
+			ICR_SetText_Colour(0x000000);
+			local debugtext = "id:"+this.ID+", p:"+this.parentObjectID+", identifer:"+this.identifier+", "+"Z:"+this.relZDepth+", x:"+this.relpos.x+", y:"+this.relpos.y;
+			ICR_DrawText(this.relpos.x, this.relpos.y-10, debugtext);
+
+	}
+
+
+
+
+
+
+
+	
+
+}
+
+
+//MAIN DISPLAY OBJECT DONE
+
+/*
+	Now comes polymorphic CORE classes for different goals, like boxes, text lines ect
+*/
+
+
+
+
+class BoxObject extends DisplayObject{
+	function paint(){
+	
+		
+			
+			//Now draw the border radius over the created BOX
+			if(this.borderRadius > 0){
+			
+			
+				//borderRadius
+				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
+				//for now we just check one pixel as we dont want to use too much cpu time
+	
+					
+				local topleft = {x=this.relpos.x,y=this.relpos.y};
+				local topright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y)};
+				local bottomleft = {x=this.relpos.x,y=(this.relpos.y+this.size.y)};
+				local bottomright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y+this.size.y)};
+						
+				local topleftcolor = ICR_GetPixel(topleft.x,topleft.y);
+				local toprightcolor = ICR_GetPixel(topright.x,topright.y);
+				local bottomleftcolor = ICR_GetPixel(bottomleft.x,bottomleft.y);
+				local bottomrightcolor = ICR_GetPixel(bottomright.x,bottomright.y);
+			
+			
+			
+				
+				//DRAW MAIN BOX
+				ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+			
+			
+				//lets do this
+				
+				local resolution = 1;
+				
+				local radius = this.borderRadius;
+				local PI = 3.1415926535;
+				  
+				  
+				//topleft
+			    ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel(topleft.x+radius + x1, topleft.y+radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(topleft.x+radius, topleft.y+radius, this.options.color); 
+				
+				
+				//topright
+				ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel((topright.x-radius+1) + x1, topright.y+radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(topright.x-radius, topright.y+radius, this.options.color); 
+				
+				 
+				//bottomleft
+				ICR_DrawBox(bottomleft.x, bottomleft.y-radius , radius, radius, bottomleftcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel(bottomleft.x+radius + x1, bottomleft.y-radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(bottomleft.x+radius, bottomleft.y-radius, this.options.color); 
+				
+				 //bottomright
+				ICR_DrawBox(bottomright.x-radius, bottomright.y-radius , radius, radius, bottomrightcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel((bottomright.x-radius+1) + x1, bottomright.y-radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(bottomright.x-radius, bottomright.y-radius, this.options.color); 
+				
+				  
+				  
+							
+			
+			} else {
+				//No radius, just draw the box
+				//DRAW MAIN BOX
+				ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
+			
+			}
+			
+			
+			
+	}
+}
+
+
+
+class TextObject extends DisplayObject{
+
+	
+	function prepaint(){
+		
+	
+		local nMainFont = this.UI.createFont("Arial", this.fontSize)
+		local nCurFont = ICR_SelectFont(nMainFont);
+				
+		local nWidth = ICR_GetText_Width(options.text);
+		local nHeight = ICR_GetText_Height(options.text);
+		this.size = {x=nWidth,y=nHeight};
+	
+		//we want to do this before the main prepaint as we want to calculate text size
+		base.prepaint();
+	}
+
+	function paint(){
+			local nMainFont =  this.UI.createFont("Arial", this.fontSize)
+			local nCurFont = ICR_SelectFont(nMainFont);
+			ICR_SetText_Colour(this.fontColor);
+			ICR_DrawText(this.relpos.x, this.relpos.y, this.text);
+	}
+}
+
+
+
+
+
+
+
+

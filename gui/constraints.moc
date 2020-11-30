@@ -1,0 +1,159 @@
+class ConstraintController{
+
+	constraints = [];
+	
+	function constructor(){
+		this.constraints = [];
+	}
+
+	function setX(c){
+		c.setAttribute("x");
+		constraints.push(c);
+	}
+
+	function setY(c){
+		c.setAttribute("y");
+		constraints.push(c);
+	}
+	
+	function setWidth(c){
+		c.setAttribute("width");
+		constraints.push(c);
+	}
+	
+	function setHeight(c){
+		c.setAttribute("height");
+		constraints.push(c);
+	}	
+	
+	
+	function run_constraints(object){
+		if(this.constraints.len() > 0){
+			for(local i = 0; i < this.constraints.len(); i++){
+				//later on, be sure to run width/height constraints first
+				this.constraints[i].runConstraint(object);
+			}
+		}	
+	}
+
+}
+
+
+class Constraint {
+
+	attribute = ""
+
+	function setAttribute(a){
+		this.attribute = a;
+	}
+	
+	//override
+	function runConstraint(object){
+	
+	}
+
+}
+
+
+class CenterConstraint extends Constraint {
+	
+	function runConstraint(object){
+	
+		local Parent = object.getParent();
+		if(Parent){
+			if(this.attribute == "x"){
+				object.relpos = {x=((Parent.size.x / 2) - (object.size.x / 2))+Parent.relpos.x,y=object.relpos.y};
+			}
+			if(this.attribute == "y"){
+				object.relpos = {y=((Parent.size.y / 2) - (object.size.y / 2))+Parent.relpos.y, x=object.relpos.x};
+			}
+			
+		} else {
+			
+			if(this.attribute == "x"){
+				object.relpos = {x=((object.UI.tOurWinSize.WIDTH/2) - (object.size.x / 2)), y=object.relpos.y};
+			}
+			if(this.attribute == "y"){
+				object.relpos = {y=((object.UI.tOurWinSize.HEIGHT/2) - (object.size.y / 2)), x=object.relpos.x};
+			}
+		}
+	
+	}
+	
+}
+
+/*
+	this constraint can take another objects position/size 
+	and match it to anothers making any size options
+	relative to the linked object
+*/
+class RelativeConstraint extends Constraint{
+	
+	function constructor(){
+	
+	
+	}
+
+}
+
+/*
+	Size Constraints need to run first, because 
+	otherwise position constraints which use size will be off
+*/
+class PercentageConstraint extends Constraint {
+
+	percentage = 0;
+
+	function constructor(value){
+
+		this.percentage = value;
+	
+	}
+	
+	function runConstraint(object){
+	
+		local Parent = object.getParent();
+	
+		if(Parent){
+
+			if(this.attribute == "x"){
+				object.relpos = {x=(Parent.relpos.x + (Parent.size.x*(this.percentage / 100.0))), y=object.relpos.y};
+			}
+
+			if(this.attribute == "y"){
+				object.relpos = {y=(Parent.relpos.y + (Parent.size.y*(this.percentage / 100.0))), x=object.relpos.x};
+			}
+
+			if(this.attribute == "width"){
+				object.size = {y=object.size.y, x=((Parent.size.x*(this.percentage / 100.0)))}
+				
+			}
+			if(this.attribute == "height"){
+				object.size = {x=object.size.x, y=((Parent.size.y*(this.percentage / 100.0)))}
+			}
+			
+		} else {
+
+			if(this.attribute == "x"){
+				object.relpos = {x=(0 + (object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0))), y=object.relpos.y};
+			}
+
+			if(this.attribute == "y"){
+				object.relpos = {y=(0 + (object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0))), x=object.relpos.y};
+			}
+
+			
+			if(this.attribute == "width"){
+				object.size = {y=object.size.y, x=((object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0)))}
+			}
+			if(this.attribute == "height"){
+				object.size = {x=object.size.x, y=((object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0)))}
+			}
+
+
+		}
+	
+	
+	}
+	
+}

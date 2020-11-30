@@ -1,0 +1,456 @@
+class Color {
+
+	primary_bg = 0xcce5ff;
+	primary_btn_bg = 0x007bff;
+	primary_font = 0x004085;
+
+	success_bg= 0xb6d7a8;
+	success_btn_bg=0x93c47d;
+	success_font=0x155724;
+
+	danger_bg = 0xf8d7da;
+	danger_btn_bg = 0xdd7e6b;
+	danger_font=0x990000;
+
+	warning_btn_bg=0xe69138;
+	warning_font=0xe69138;
+
+	white = 0xFFFFFF;
+	silver = 0xC0C0C0;
+	gray = 0x808080;
+	darkgray = 0x888888;
+	lightgray = 0xb0b0b0;
+	black = 0x000000;
+	red = 0xFF0000;
+	orange = 0xffa500
+	maroon = 0x800000;
+	yellow = 0xFFFF00;
+	olive = 0x808000;
+	lime = 0x00FF00;
+	green = 0x008000;
+	aqua = 0x00FFFF;
+	teal = 0x008080;
+	blue = 0x0000FF;
+	navy = 0x000080;
+	fuchsia = 0xFF00FF;
+	purple = 0x800080;
+
+
+
+}
+
+dofile("etal\\lib\\gui\\constraints.moc")
+
+
+/*
+GUI PIPELINE
+
+All renderable objects should be derived from the DisplayObject Class, with its own print() to express how it will look.
+
+Step 1 
+Instanciate a DisplayObject
+	a : set all properties
+	b : set all relevent events
+	c : add any constraint controllers
+	d : add any child DisplayObjects
+
+Step 2
+Add Object to UI Controller (GUI class)
+
+Step 3
+Enable UI Window, thus calling the onWindowPaint,
+UI.runPaintEvents is now called, only the one function is nessesary.
+	a : the GUI class calculates all relative ZDepths with relation to objects and their parents so parent Z + object Z, this is for click events
+	b : All display objects are now array sorted by their new relative Z 
+	c : In order, each objects preprint function will be called, this is an oppertunity for the 
+	    DisplayObject to calculate its relative position in regards to any parent objects.
+		The prepaint function also calls upon any Constraint Controllers to execute their constraints, 
+		which can be anything from centering to percentage Sizing.
+		This function will then recursivly call itself on all child objects, thus cascading down the objects.
+	d : Finally the Objects paint() function is called which now uses any newly calculated values and the object is rendered.
+
+
+
+*/
+
+
+
+
+class GUI{
+
+ debug = false;
+	
+ displayObjects = []; //houses all display objects within array, including all children within those display objects
+ objectIDCounter = 0; //used to increment the ID of each object
+ fonts=[]; //used to keep track of all fonts created
+
+ styles=[];
+ 
+ nOurWinID = 0;
+ windowfile = "";
+ tOurWinSize = 0;
+
+ bWinOpen = false;
+
+ TimerController = null; //UI requires a timer controller, this can be used to stop clicks going through to the till after UI closing
+
+ function constructor(){
+
+	this.debug = false;
+	
+	this.displayObjects = [];
+	this.objectIDCounter = 0;
+
+	this.fonts=[];
+
+	this.nOurWinID = 0;
+	this.windowfile = "";
+	this.tOurWinSize = 0;
+
+	this.bWinOpen = false;
+
+
+ }
+
+
+ function setTimerController(TimerController){
+	 this.TimerController = TimerController;
+ }
+
+ function deleteAllObjects(){
+
+	 this.displayObjects = [];
+
+ }
+	 
+ function createWindow(xmlfile){
+	 this.windowfile = xmlfile;
+	 this.nOurWinID = ICR_SalesModeWindow_Add(this.windowfile); 
+	 
+	 this.tOurWinSize = ICR_GetWindowDimensions(this.nOurWinID);
+	 //print(JSONSerialise(this.tOurWinSize));
+
+	 
+ }
+ 
+ function enableWindow(){
+	ICR_Window_Enable(this.nOurWinID, true); 
+	this.bWinOpen = true;
+ }  
+ 
+ function disableWindow(){
+	 ICR_Window_Enable(this.nOurWinID, false); 
+	local self = this;
+	this.TimerController.setTimeout({callback=function(timer,i){
+		self.bWinOpen = false;
+	}},500);
+	
+	
+
+ }
+ 
+ function redraw(){
+	 collectgarbage();
+
+	 ICR_RedrawScreen();
+
+ }
+
+ function redrawWindow(){
+	 ICR_RedrawWindow(this.nOurWinID);
+ }
+	
+ function addObject(object){
+	this.displayObjects.push(object);
+	//this.allObjects.push(object);
+ }
+ 
+ function removeDisplayObject(ID){
+
+
+	 this.recursivlyRemoveDisplayObject(ID, this.displayObjects);
+
+	 //this.docount = 0;
+	 //this.countAllDisplayObjects(this.displayObjects);
+	 //print("DO:"+this.docount);
+	
+ }
+
+ function countAllDisplayObjects(objects){
+	for(local i = 0; i < objects.len();i++){
+		
+		this.docount = this.docount + 1;
+		
+		if("childObjects" in objects[i]){
+			if(objects[i].childObjects.len() > 0){
+				this.countAllDisplayObjects(objects[i].childObjects);
+			}
+		} else {
+			print("empty object")
+		}
+	}
+ }
+
+ function recursivlyRemoveDisplayObject(ID, objects){
+
+		 if(objects.len() > 0){
+			 	
+				for(local i = 0; i < objects.len();i++){
+
+						if(objects[i].ID == ID){
+							objects[i] = null
+							objects.remove(i);
+							return true;
+						}
+					
+						if(objects[i].childObjects.len() > 0){
+						   local result = this.recursivlyRemoveDisplayObject(ID, objects[i].childObjects);
+						   if(result == true){
+							   return true;
+						   }
+						}
+			
+				}
+
+
+
+		 }
+
+		 return false;
+
+ }
+
+
+ function recurseFindObject(ID, objectArr){
+
+	if(objectArr){
+		if(objectArr.len() > 0){
+				
+				//check we are
+				for (local nCount = 0 ; nCount < objectArr.len(); nCount++) 
+				{
+							if(objectArr[nCount].identifier == ID){
+								return objectArr[nCount];
+							} else {
+								local found = this.recurseFindObject(ID, objectArr[nCount].childObjects);
+								if(found != null){
+									return found;
+								}
+							}
+							
+						
+				}
+	
+		}
+
+	}
+
+	return null
+
+
+ }
+
+
+ function findObject(identifier){
+	 local found =  this.recurseFindObject(identifier, this.displayObjects);
+	 return found;
+		/*
+		for (local nCount = 0 ; nCount < this.allObjects.len(); nCount++) 
+		{
+			if(this.allObjects[nCount].identifier == identifier){
+				return this.allObjects[nCount];
+			}
+		}
+		*/
+ }
+
+
+function recurseFindObjectByXY(x,y,objects){
+
+	local foundItems = [];
+
+	for (local nCount = 0; nCount < objects.len(); nCount++) 
+	{	
+		local item = objects[nCount];
+
+
+		if(x > item.relpos.x && x < (item.relpos.x + item.size.x)){
+			if(y > item.relpos.y && y < (item.relpos.y + item.size.y)){
+				//Yeppers we have clicked in this item
+				if(item.visible == true && item.clickable == true){
+					//we only care about visible items
+					foundItems.push(item);
+				}
+			}
+		}
+
+
+		if(item.childObjects.len() > 0){
+			local foundmore = this.recurseFindObjectByXY(x,y,item.childObjects);
+			if(foundmore.len() > 0){
+				foundItems.extend(foundmore);
+			}
+		}
+
+
+	}
+
+	return foundItems;
+	
+
+
+
+}
+
+ //This always returns top most item as that is what will be visible, no passthroughs yet?
+ function findObjectByXY(x,y){
+
+	 //So we find all objects in that cord, order by ZDepth then return top most
+	 local foundObjects = [];
+
+	 foundObjects = this.recurseFindObjectByXY(x,y, this.displayObjects);
+
+	 foundObjects.sort(@(a,b) a.relZDepth <=> b.relZDepth);
+	
+	if(foundObjects.len() > 0){ 
+    return foundObjects[foundObjects.len()-1];	
+	} else {
+		return null
+	}
+
+
+ }
+
+ 
+ function SortByZDepth(a,b){
+	if(a.zDepth>b.zDepth) return 1
+    else if(a.zDepth<b.zDepth) return -1
+    return 0;
+ }
+
+ 
+ function createFont(fontname, fontsize){
+
+	 //first we want to see if it already exists
+
+	 for (local nCount = 1 ; nCount < this.fonts.len(); nCount++) 
+	 {
+		 if(this.fonts[nCount].fontname == fontname && this.fonts[nCount].fontsize == fontsize){
+			 //print("Reusing FONT");
+			 return this.fonts[nCount].ID;
+		 }
+	 }
+	 
+	 local nMainFont = ICR_CreateFont(fontname, fontsize);
+	 local objtable = {ID=nMainFont,fontname=fontname,fontsize=fontsize};
+	 this.fonts.push(objtable);
+
+	 return nMainFont;
+
+ }
+
+ 
+ //Lets run the paint on every object
+ //lets  build in z-depth, we can do this by ordering the draw events, i assume it works like drawscreen
+ function runPaintEvents(ID){
+	 
+		//Only print for this GUI instance if the winID matches
+		if(this.nOurWinID == ID){
+		
+			//Lets begin the render queue if we have objects
+			if(this.displayObjects.len() > 0){
+				for(local i=0; i < this.displayObjects.len(); i++){ 
+					//prepaint allows us to sort out relative positions before we paint it.
+					//It also lets us run the constrains controllers before painting.
+					this.displayObjects[i].prepaint();
+					
+				}
+			}
+
+ 		}
+
+ }
+
+ function runAllMouseUps(objects){
+	for(local i = 0; i < objects.len();i++){
+		if("childObjects" in objects[i]){
+			if(objects[i].childObjects.len() > 0){
+				this.runAllMouseUps(objects[i].childObjects);
+			}
+		}
+		if("mouseUp" in objects[i]){
+			objects[i].mouseUp()
+	
+		}
+	}
+	return
+ }
+
+ function handleMouseEvents(nWindowID,nEvent,nX,nY){
+
+	 //ensure we are on the right window
+	 if(nWindowID == this.nOurWinID){
+
+		 	//this will always return topmost clickable item
+			local clicked = this.findObjectByXY(nX,nY);
+			
+			//do we have a object in the XY?
+			if(clicked != null){
+				
+				//is it allowed to be clicked
+				if(clicked.clickable == true){
+				
+					//does it have a onClick callback
+					if("onClick" in clicked){
+
+						//are we clicking down?
+						if(nEvent == 0){
+							if("mouseDown" in clicked){
+								clicked.mouseDown()
+								clicked.onClick();
+							}
+						}
+
+					
+
+					} 
+
+				}
+			
+			}
+
+			//we are mouse upping, run al mouseups as the cursor may not be on the object anymore
+			//could be optimised to log which object was last mousedowned on and only mouse up that?
+			if(nEvent == 1){
+					this.runAllMouseUps(this.displayObjects)
+			}
+
+
+	 }
+
+
+
+ }
+
+
+ function loadStyles(fileDirectory){
+
+	 //open file, parse json, save into array
+	local fileTarget = file(fileDirectory,"r");
+	local StylesString = this.ReadLine(fileTarget);
+	this.styles.push(JSONDeSerialise(StylesString));
+	fileTarget.close();
+
+ }
+
+
+}
+
+
+
+
+dofile("etal\\lib\\gui\\objects.moc");
+
+
+dofile("etal\\lib\\gui\\compoundObjects.moc");
+

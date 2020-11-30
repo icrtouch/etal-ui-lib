@@ -1,0 +1,1335 @@
+
+dofile("etal\\lib\\dates.moc");
+
+class ButtonObject extends DisplayObject{
+	
+	text = null;
+
+	buttonState = 0;
+
+	function constructor(UI, options){
+		base.constructor(UI, options)
+		
+		this.buttonState = 0;
+		//If the button has text lets build it and add it as a child to the button
+		if("text" in options){
+		
+				//local nMainFont = ICR_CreateFont("Arial", this.fontSize);
+				local nMainFont = UI.createFont("Arial", this.fontSize);
+				local nCurFont = ICR_SelectFont(nMainFont);
+				
+				local nWidth = ICR_GetText_Width(options.text);
+				local nHeight = ICR_GetText_Height(options.text);
+
+			
+				this.text = TextObject(UI, {
+					zDepth=1,
+					size={x=nWidth,y=nHeight},
+					clickable=false,
+					//position={x=10,y=10},
+					text=options.text,
+					fontSize=this.fontSize,
+					fontColor=this.fontColor,
+				});
+				
+				local CC = ConstraintController();
+				CC.setX(CenterConstraint());
+				CC.setY(CenterConstraint());
+				this.text.setConstraintController(CC); //setConstraintController
+				
+				//set text parent to the buttonobject
+				//this.text.setParent(this);
+				
+				//add object to UI Control
+				this.addChildObject(this.text);
+			
+			
+		}
+	
+	}
+
+	function mouseDown(){
+		this.buttonState = 1;
+		this.UI.redraw();
+	}
+
+	function mouseUp(){
+		if(this.buttonState == 1){
+			this.buttonState = 0;
+			this.UI.redraw();
+		}
+	}
+
+	function paint(){
+		
+			
+			//Now draw the border radius over the created BOX
+			if(this.borderRadius > 0){
+			
+			
+				//borderRadius
+				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
+				//for now we just check one pixel as we dont want to use too much cpu time
+	
+					
+				local topleft = {x=this.relpos.x,y=this.relpos.y};
+				local topright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y)};
+				local bottomleft = {x=this.relpos.x,y=(this.relpos.y+this.size.y)};
+				local bottomright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y+this.size.y)};
+						
+				local topleftcolor = ICR_GetPixel(topleft.x,topleft.y);
+				local toprightcolor = ICR_GetPixel(topright.x,topright.y);
+				local bottomleftcolor = ICR_GetPixel(bottomleft.x,bottomleft.y);
+				local bottomrightcolor = ICR_GetPixel(bottomright.x,bottomright.y);
+			
+			
+			
+				
+				//DRAW MAIN BOX
+				ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+			
+			
+				//lets do this
+				
+				local resolution = 1;
+				
+				local radius = this.borderRadius;
+				local PI = 3.1415926535;
+				  
+				  
+				//topleft
+			    ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel(topleft.x+radius + x1, topleft.y+radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(topleft.x+radius, topleft.y+radius, this.options.color); 
+				
+				
+				//topright
+				ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel((topright.x-radius+1) + x1, topright.y+radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(topright.x-radius, topright.y+radius, this.options.color); 
+				
+				  
+				  				
+				//bottomleft
+				ICR_DrawBox(bottomleft.x, bottomleft.y-radius , radius, radius, bottomleftcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel(bottomleft.x+radius + x1, bottomleft.y-radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(bottomleft.x+radius, bottomleft.y-radius, this.options.color); 
+				
+				 //bottomright
+				ICR_DrawBox(bottomright.x-radius, bottomright.y-radius , radius, radius, bottomrightcolor);
+			    for(local i = 0; i < 360; i += resolution)
+			    {
+					local angle = i;
+					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
+					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
+					ICR_DrawPixel((bottomright.x-radius+1) + x1, bottomright.y-radius + y1, this.options.color);
+			    }
+			    ICR_FloodFill(bottomright.x-radius, bottomright.y-radius, this.options.color); 
+				
+				  
+				  
+							
+			
+			} else {
+				//No radius, just draw the box
+				//DRAW MAIN BOX
+
+				if(this.buttonState == 0){
+					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+				} else if(this.buttonState == 1) {
+					ICR_DrawBox(this.relpos.x-5, this.relpos.y-5 , this.size.x+10, this.size.y+10, this.options.color);
+				}
+
+			}
+			
+			
+			
+			
+			
+	}
+
+
+}
+
+class TextInputObject extends DisplayObject{
+
+	returnedText = "";
+	placeholder = "";
+	textObject = null;
+	
+
+
+	function constructor(UI, options){
+		base.constructor(UI, options);
+
+		if("placeholder" in options){
+			this.placeholder = options.placeholder;
+
+			local nMainFont = UI.createFont("Arial", this.fontSize);
+			local nCurFont = ICR_SelectFont(nMainFont);
+			
+			local nWidth = ICR_GetText_Width(options.placeholder);
+			local nHeight = ICR_GetText_Height(options.placeholder);
+
+			this.textObject = TextObject(UI, {
+				zDepth=1,
+				size={x=nWidth,y=nHeight},
+				clickable=false,
+				//position={x=10,y=10},
+				text=this.placeholder,
+				fontSize=this.fontSize,
+			});
+			
+			local CC = ConstraintController();
+			CC.setX(PercentageConstraint(10));
+			CC.setY(CenterConstraint());
+			this.textObject.setConstraintController(CC); //setConstraintController
+			
+			//set text parent to the buttonobject
+			//this.text.setParent(this);
+			
+			//add object to UI Control
+			this.addChildObject(this.textObject);
+
+			
+
+		}
+
+		this.clickable = true;
+		this.returnedText = "";
+
+		this.onClick = function(){
+			
+				this.returnedText = ICR_GetAlphaDialog("Search For Tickets", 500, true, "");
+				print(this.returnedText);
+				this.textObject.text = this.returnedText;
+				UI.redraw();
+
+		}
+
+	}
+
+
+	function mouseDown(){
+
+	}
+
+	function paint(){
+
+
+		ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+		ICR_DrawFrame(this.relpos.x, this.relpos.y , this.size.x, this.size.y, 2, this.options.borderColor);
+		
+
+	}
+
+
+}
+
+class PaginationObject extends DisplayObject{
+
+	currentPage = 0;
+	firstPage = 0;
+	lastPage = 0;
+
+	showIndicator = true;
+	Indicators = [];
+
+	prevbtn = null;
+	nextbtn = null;
+	displayCount = null;
+
+	nextCallback = null;
+	prevCallback = null;
+
+
+	function constructor(UI, options){
+		base.constructor(UI,options);
+
+		local self = this;
+
+		this.Indicators = [];
+
+		if("showIndicator" in options){
+			this.showIndicator = options.showIndicator;
+		}
+
+		if("currentPage" in options){
+			this.currentPage = options.currentPage;
+		} else {
+			this.currentPage = 1;
+		}
+
+		if("lastPage" in options){
+			this.lastPage = options.lastPage;
+		} else {
+			this.lastPage = 1;
+		}
+
+		if("nextCallback" in options){
+			this.nextCallback = options.nextCallback;
+		} else {
+			this.nextCallback = function(){
+				//
+			}
+		}
+
+		if("prevCallback" in options){
+			this.prevCallback = options.prevCallback;
+		} else {
+			this.prevCallback = function(){
+				//
+			}
+		}
+
+
+		//first we need to see how large this pagination is
+
+		//make two buttons one for prev another for next
+		
+		this.prevbtn = ButtonObject(UI, {
+			identifier="prevbtn",
+			zDepth=1,
+			position={x=0,y=0},
+			size={x=200,y=40},
+			color=Color().warning_btn_bg,
+			text = "Prev"
+			fontSize=20,
+			fontColor=Color().white,
+			onClick=function(){
+				
+				if(self.currentPage > 1){
+					self.currentPage = self.currentPage - 1;
+					self.displayCount.text = (self.currentPage + " OF " + self.lastPage);
+					self.setIndicatorColours();
+					UI.redraw();
+
+					self.prevCallback();
+
+				}
+
+			},
+		})
+		local prevConst = ConstraintController();
+		prevConst.setWidth(PercentageConstraint(15))
+		prevConst.setX(PercentageConstraint(0))
+		prevConst.setY(CenterConstraint());
+		this.prevbtn.setConstraintController(prevConst);
+		this.addChildObject(this.prevbtn)
+
+
+		this.nextbtn = ButtonObject(UI, {
+			identifier="nextbtn",
+			zDepth=1,
+			position={x=0,y=0},
+			size={x=200,y=40},
+			color=Color().success_btn_bg,
+			text = "Next"
+			fontSize=20,
+			fontColor=Color().white,
+			onClick=function(){
+
+				if(self.currentPage < self.lastPage){
+					self.currentPage = self.currentPage + 1;
+					self.displayCount.text = (self.currentPage + " OF "+ self.lastPage);
+					self.setIndicatorColours()
+					UI.redraw();
+
+					self.nextCallback();
+				}
+				
+			},
+		})
+		local nextConst = ConstraintController();
+		nextConst.setWidth(PercentageConstraint(15))
+		nextConst.setX(PercentageConstraint(85))
+		nextConst.setY(CenterConstraint());
+		this.nextbtn.setConstraintController(nextConst);
+		this.addChildObject(this.nextbtn);
+
+
+	
+
+		if(this.showIndicator == true){
+
+			local indicatorContainer = BoxObject(UI, {
+				zDepth=1,
+				position={x=0,y=0},
+				size={x=20,y=20},
+				color=this.color,
+			})
+			local Constraints = ConstraintController();
+			Constraints.setX(PercentageConstraint(18));
+			Constraints.setWidth(PercentageConstraint(64));
+			Constraints.setHeight(PercentageConstraint(100));
+			indicatorContainer.setConstraintController(Constraints);
+			this.addChildObject(indicatorContainer);
+			
+
+			//first calculate how large the indicators should be based off how many pages there are.
+			//take into account 18% buffer on each side
+			local allSegments = this.lastPage * 2;
+
+			local segmentSize = (100.0 / allSegments);
+			//print(segmentSize);
+
+			for(local i = 1; i <= this.lastPage;i++){
+				
+								//as this is in constructor, first item is green
+								local seg_color = 0xf2f2f2;
+								if(i == this.currentPage){
+									seg_color = Color().green;
+								}
+
+								local created_segment = BoxObject(UI, {
+									zDepth=2,
+									position={x=0,y=24},
+									size={x=20,y=20},
+									color=seg_color,
+								});
+								local CC = ConstraintController();
+								local perc = ((segmentSize*2)*i)-(segmentSize+(segmentSize/2));
+						
+								CC.setX( PercentageConstraint(perc));
+								CC.setWidth(PercentageConstraint(segmentSize));
+								created_segment.setConstraintController(CC);
+
+								Indicators.push(created_segment);
+
+								indicatorContainer.addChildObject(created_segment);
+
+
+			}
+
+						//Once buttons created we need to create all the middle points
+			this.displayCount = TextObject(UI, {
+				identifier="counterText",
+				zDepth=1,
+				position={x=0,y=0},
+				size={x=20,y=20},
+				color=Color().success_btn_bg,
+				text = (this.currentPage + " OF "+ this.lastPage),
+				fontSize=20,
+				fontColor=Color().black,
+			})
+			local CounterConst = ConstraintController();
+			CounterConst.setX(CenterConstraint());
+			this.displayCount.setConstraintController(CounterConst);
+			indicatorContainer.addChildObject(this.displayCount);
+
+		
+
+		} else {
+
+						//Once buttons created we need to create all the middle points
+				this.displayCount = TextObject(UI, {
+					identifier="counterText",
+					zDepth=1,
+					position={x=0,y=0},
+					size={x=20,y=20},
+					color=Color().success_btn_bg,
+					text = (this.currentPage + " OF "+ this.lastPage),
+					fontSize=20,
+					fontColor=Color().black,
+				})
+				local CounterConst = ConstraintController();
+				CounterConst.setX(CenterConstraint());
+				this.displayCount.setConstraintController(CounterConst);
+				this.addChildObject(this.displayCount);
+
+		}
+
+
+
+
+
+	}
+
+	function setLastPage(lastPage){
+				
+					this.lastPage = lastPage;
+					this.displayCount.text = (this.currentPage + " OF " + this.lastPage);
+					this.setIndicatorColours();
+					this.UI.redraw();
+	}
+
+	function setCurrentPage(currentPage){
+
+					this.currentPage = currentPage;
+					this.displayCount.text = (this.currentPage + " OF " + this.lastPage);
+					this.setIndicatorColours();
+					this.UI.redraw();
+
+	}
+
+
+	function setIndicatorColours(){
+
+			for(local i = 0; i < this.Indicators.len();i++){
+
+				if(i == this.currentPage-1){
+					//set it green
+					this.Indicators[i].color = Color().green;
+				} else {
+					//set it gray
+					this.Indicators[i].color = 0xf2f2f2;
+				}
+
+
+			}
+
+	}
+
+
+	function paint(){
+
+
+
+		//draw background box
+		ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+	}
+}
+
+class ClipScrollBox extends DisplayObject{
+
+	Sub_UI = null;
+	Created_UI = false;
+
+	function constructor(UI, options){
+		base.constructor(UI, options)
+
+		//here we do what? generate the xml file we will also need to make a new instance of UI to manage paint events for us
+
+		this.Sub_UI = null;
+		this.Created_UI = false;
+
+		this.Sub_UI = GUI();
+
+	}
+
+
+	function prepaint(){
+
+		base.prepaint();
+
+
+		//as Sale windows are absolutly positioned we need to take into account the root UI window position
+		this.relpos = {x=(this.relpos.x+this.UI.tOurWinSize.LEFT), y=(this.relpos.y + this.UI.tOurWinSize.TOP)};
+
+
+
+
+
+		local fileLocation = "C:\\ICRTouch\\Etal\\TouchTickets\\gui_cache\\";
+		local filename = "window_"+this.ID+".xml";
+		local filefull = fileLocation + "window_"+this.ID+".xml";
+
+		local fileContent = "<SKIN> <WINDOW left=\""+this.relpos.x+"\" top=\""+this.relpos.y+"\" width=\""+this.size.x+"\" height=\""+this.size.y+"\"></WINDOW><BACKGROUND image=\"windowbackground.bmp\" TransparentColour=\"00FF00FF\" /> </SKIN>";
+
+		local fileCreated = this.WriteFile(fileContent, filefull);
+
+		//if the file was created we need to make a GUI instance that will handle its draws
+		if(fileCreated){
+
+			
+			
+			if(this.Created_UI == false){
+				this.Sub_UI.createWindow("gui_cache\\"+filename);
+				this.Created_UI = true;
+				
+				this.Sub_UI.enableWindow();
+
+
+				//lets add a block in just to see if it works
+				local upgradeBtn = ButtonObject(this.Sub_UI, {
+					identifier="upgradebtn",
+					zDepth=2,
+					position={x=0,y=0},
+					size={x=400,y=50},
+					color=Color().primary_btn_bg,
+					text="Upgrade Ticket Test",
+					fontSize=30,
+					fontColor=Color().white,
+					onClick=function(){
+
+							print("Upgrade Button Pressed");
+
+					},
+				});
+
+				this.Sub_UI.addObject(upgradeBtn);
+
+
+
+
+
+
+			}
+			
+			
+			
+			
+
+		}
+
+
+	}
+
+	function runScrollBoxPaint(nOurWinID){
+		if(this.Sub_UI.nOurWinID == nOurWinID){
+			this.Sub_UI.runPaintEvents(this.Sub_UI.nOurWinID);
+			//print(this.Sub_UI.windowfile)
+		}
+	}
+
+
+
+	function paint(){
+
+		//ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+
+		//Run the GUI instance paint here
+		
+
+
+	}
+
+
+	function WriteFile(szText,szFileName, szType = "w") 
+	{
+		try
+		{
+			local fileTarget = file(szFileName,szType);
+			for (local nCount=0;nCount<szText.len();nCount++)
+			{
+				fileTarget.writen(szText[nCount],'c');
+			}
+			fileTarget.flush();
+			fileTarget.close();
+			return true;
+		}
+		catch(e)
+		{
+			//print(e);
+			print("Write error :"+szFileName);
+			return false;
+		}
+	}
+
+
+} 
+
+class ModalObject extends DisplayObject{
+
+	DoneText = "";
+	DoneTextColor = 0x000000;
+	DoneBgColor=0xFFFFFFF;
+	DoneBoxBgColor=0xFFFFFFF;
+
+	ContentBox = null;
+	DoneBtn = null;
+
+	DoneCallback=null;
+
+	function constructor(UI, options){
+		base.constructor(UI, options);
+
+		if("DoneCallback" in options){
+			this.DoneCallback=options.DoneCallback;
+		} else {
+			this.DoneCallback={
+				callback=function(){
+
+				}
+			}
+		}
+
+		if("DoneText" in options){
+			this.DoneText = options.DoneText;
+		} else {
+			this.DoneText = "Done";
+		}
+
+		if("DoneTextColor" in options){
+			this.DoneTextColor = options.DoneTextColor;
+		} else {
+			this.DoneTextColor = Color().white;
+		}
+
+		if("DoneBgColor" in options){
+			this.DoneBgColor = options.DoneBgColor;
+		} else {
+			this.DoneBgColor = Color().success_btn_bg;
+		}
+
+		if("DoneBoxBgColor" in options){
+			this.DoneBoxBgColor = options.DoneBoxBgColor;
+		} else {
+			this.DoneBoxBgColor = Color().success_bg;
+		}
+
+
+
+		//Generate
+		this.ContentBox = BoxObject(UI, {
+			size={x=0,y=0},
+			position={x=0,y=0},
+			color=options.color
+		});
+		local contentConstr = ConstraintController();
+		contentConstr.setWidth(PercentageConstraint(100));
+		contentConstr.setHeight(PercentageConstraint(100));
+		this.ContentBox.setConstraintController(contentConstr);
+
+		this.addChildObject(this.ContentBox);
+
+
+
+		local donebox = BoxObject(UI, {
+			size={x=0,y=60},
+			position={x=0,y=0},
+			color=this.DoneBoxBgColor,
+		});
+		local doneboxConst = ConstraintController();
+		doneboxConst.setWidth(PercentageConstraint(100));
+		doneboxConst.setY(PercentageConstraint(100));
+		donebox.setConstraintController(doneboxConst);
+
+
+		local self = this;
+		this.DoneBtn = ButtonObject(UI, {
+			position={x=0,y=0},
+			size={x=0,y=40},
+			color=this.DoneBgColor,
+			fontColor=Color().white,
+			text=this.DoneText,
+			zDepth=10,
+			onClick=function(){
+
+				self.removeAllChildObjects();
+				self.UI.removeDisplayObject(self.ID);
+				self.UI.redraw();
+
+				//Run its callback if set
+				self.DoneCallback.callback();
+
+			}
+		});
+		local doneConst = ConstraintController();
+		doneConst.setWidth(PercentageConstraint(90));
+		doneConst.setY(CenterConstraint());
+		doneConst.setX(CenterConstraint());
+		this.DoneBtn.setConstraintController(doneConst);
+		donebox.addChildObject(this.DoneBtn);
+
+		this.addChildObject(donebox);
+
+
+
+	}
+
+	function paint(){
+
+	}
+
+	function addContent(contentObject){
+			this.ContentBox.addChildObject(contentObject);
+	}
+
+	function getContentBox(){
+		return this.ContentBox;
+	}
+
+}
+
+class CalendarObject extends DisplayObject{
+
+		month = 0;
+		year = 0;
+		leftbtn = null;
+		rightbtn = null;
+		monthText = null;
+		DayContainer = null;
+
+		onlyFilterClick = false;
+		selectMultiple = false;
+		selectedDates = [];
+		DateRangeFilters = [];
+
+		dateSelectedCallback=null;
+		failSelectedCallback=null;
+
+
+	function constructor(UI, options){
+		base.constructor(UI, options);
+
+		if("month" in options){
+			this.month = options.month;
+		} else {
+			this.month = 1;
+		}
+
+		if("year" in options){
+			this.year = options.year;
+		} else {
+			this.year = 2020;
+		}
+
+		if("onlyFilterClick" in options){
+			this.onlyFilterClick = options.onlyFilterClick;
+		} else {
+			this.onlyFilterClick = false;
+		}
+
+		if("selectMultiple" in options){
+			this.selectMultiple = options.selectMultiple;
+		} else {
+			this.selectMultiple = false;
+		}
+
+		if("dateSelectedCallback" in options){
+			this.dateSelectedCallback = options.dateSelectedCallback;
+		} else {
+			this.dateSelectedCallback = function(){
+			};
+		}
+
+		if("failSelectedCallback" in options){
+			this.failSelectedCallback = options.failSelectedCallback;
+		} else {
+			this.failSelectedCallback = function(){
+
+			}
+		}
+
+
+		this.DateRangeFilters = [];
+
+
+
+		//the below code inside the constructor, constructs the bare bones of the calendar, like the title, left & right buttons
+
+		local self = this;
+		//left button
+		this.leftbtn = ButtonObject(this.UI,{
+					identifier="leftbtn",
+					zDepth=2,
+					clickable=true,
+					position={x=0,y=0},
+					size={x=0,y=0},
+					text="<",
+					color=Color().gray,
+					onClick=function(){
+						
+						if(self.month == 1){
+							self.month = 12;
+							self.year = self.year - 1;
+						} else {
+							self.month = self.month - 1;
+						}
+
+						self.updateMonthText();
+						self.GenerateMonth();
+						self.UI.redraw();
+
+					}
+		});
+		local cc = ConstraintController();
+		cc.setWidth(PercentageConstraint(10));
+		cc.setHeight(PercentageConstraint(8))
+		this.leftbtn.setConstraintController(cc);
+
+		this.addChildObject(this.leftbtn);
+
+
+				//left button
+		this.rightbtn = ButtonObject(this.UI,{
+					identifier="rightbtn",
+					zDepth=2,
+					clickable=true,
+					position={x=0,y=0},
+					size={x=0,y=0},
+					text=">",
+					color=Color().gray,
+					onClick=function(){
+						
+						if(self.month == 12){
+							self.month = 1;
+							self.year = self.year + 1;
+						} else {
+							self.month = self.month + 1;
+						}
+						self.updateMonthText();
+						self.GenerateMonth();
+						self.UI.redraw();
+
+					}
+		});
+
+
+
+
+		local cc = ConstraintController();
+		cc.setWidth(PercentageConstraint(10));
+		cc.setHeight(PercentageConstraint(8))
+		cc.setX(PercentageConstraint(90));
+		this.rightbtn.setConstraintController(cc);
+
+		this.addChildObject(this.rightbtn);
+
+
+		//local nMainFont = ICR_CreateFont("Arial", this.fontSize);
+		local nMainFont = UI.createFont("Arial", this.fontSize);
+		local nCurFont = ICR_SelectFont(nMainFont);
+		local nWidth = ICR_GetText_Width(this.month+" / "+this.year);
+		local nHeight = ICR_GetText_Height(this.month+" / "+this.year);
+
+		this.monthText = TextObject(this.UI, {
+			text=this.month+" / "+this.year,
+			size={x=nWidth,y=nHeight},
+			pos={x=0,y=12},
+			fontColor=Color().black,
+			fontSize=22
+		});
+
+		this.updateMonthText()
+		local mtcc = ConstraintController();
+		mtcc.setX(CenterConstraint());
+		this.monthText.setConstraintController(mtcc);
+		this.addChildObject(this.monthText);
+
+		
+
+		//right button
+
+		this.DayContainer = BoxObject(this.UI,{
+			identifier="mainbox",
+			zDepth=1,
+			clickable=false,
+			position={x=0,y=0},
+			size={x=0,y=0},
+			color=0xf2f2f2,
+		});
+		local dcc = ConstraintController();
+		dcc.setWidth(PercentageConstraint(100));
+		dcc.setHeight(PercentageConstraint(85));
+		dcc.setY(PercentageConstraint(15));
+		this.DayContainer.setConstraintController(dcc);
+		
+
+		//Grid will be 7w x 5h
+		local daysOfWeek = ["S","M","T","W","T","F","S"];
+		for (local nCount = 0 ; nCount < daysOfWeek.len(); nCount++) 
+		{
+			local DayObject = ButtonObject(this.UI, {
+					identifier="calendar",
+					zDepth=2,
+					clickable=false,
+					position={x=0,y=0},
+					size={x=0,y=25},
+					text=daysOfWeek[nCount],
+					color=Color().darkgray,
+				});
+			local dcc = ConstraintController();
+			
+			dcc.setWidth(PercentageConstraint(14.2857));
+			dcc.setHeight(PercentageConstraint(5));
+
+			dcc.setX(PercentageConstraint(14.2857*nCount));
+			dcc.setY(PercentageConstraint(10));
+		
+			DayObject.setConstraintController(dcc);
+			this.addChildObject(DayObject);
+		}
+
+
+		//run the generate month function.
+		this.GenerateMonth();
+		this.addChildObject(this.DayContainer);
+
+
+	}
+
+	function paint(){
+			//we are empty here as this compound object does not need to run any System draw calls
+	}
+
+	function updateMonthText(){
+		
+		//We are setting the objects sub object text to equal the month / year
+		this.monthText.text = this.month + "/" + this.year;
+
+		//all this below is to automatically calculate the new width of the text so that the constraints system can work well.
+		//local nMainFont = ICR_CreateFont("Arial", this.monthText.fontSize);
+		local nMainFont = UI.createFont("Arial", this.monthText.fontSize);
+		local nCurFont = ICR_SelectFont(nMainFont);
+		local nWidth = ICR_GetText_Width(this.monthText.text);
+		this.monthText.size = {x=nWidth,y=20};
+	
+	}
+
+	function GenerateMonth(){
+		
+		//remove all the day objects inside the container
+		this.DayContainer.removeAllChildObjects();
+		
+		local tMonthLengths = {[1]=31,[2]=28,[3]=31,[4]=30,[5]=31,[6]=30,[7]=31,[8]=31,[9]=30,[10]=31,[11]=30,[12]=31 };		
+		//here we build the stuff
+		local leap = IsLeapYear(this.year);
+		if(leap){
+			tMonthLengths[2] = 29;
+		}
+
+		//lets get todays date so it can be highlighted
+		local dateToday = date();
+		local FirstDayOfMonth = {
+			day=1,
+			month=this.month,
+			year=this.year,
+		}
+
+		//useful variables for calculating the amount of days in a month and what day of the week the month starts on.
+		local DaysInMonth = tMonthLengths[this.month];
+		local currentDay = 1;
+		local theWeekDay = CalcWeekDay(FirstDayOfMonth);
+		local dayOfWeek = theWeekDay.wday;
+		local current_row = 0;
+
+
+		local self = this;
+		//now we do the main loop to start generating and adding the day objects into the container
+		for (local nCount = 1 ; nCount <= DaysInMonth; nCount++) 
+		{
+
+				local current_date_loop = {
+					day=nCount,
+					month=this.month,
+					year=this.year,
+					hour=0,
+					min=0,
+					sec=0,
+				}
+
+				//if the day of the week == 7 then we want to go down a line in the calendar, and so current row is plus 1
+				if(dayOfWeek == 7){
+					dayOfWeek = 0
+					current_row = current_row + 1;
+				}
+
+
+				//calculates the x position of the day block
+				local xPos = 0;
+				if(dayOfWeek == 0){
+					xPos = 0;
+				} else {
+					xPos = 14.2857 * dayOfWeek;
+				}
+				
+				//calculates the y position of the day block
+				local yPos = 0;
+				if(current_row == 0){
+					yPos = 0;
+				} else {
+					yPos = 16.6666 * current_row;
+				}
+
+
+
+				//Go Through all filters and apply colouring and filters
+				local boxColor = Color().lightgray;
+				if(this.DateRangeFilters.len() > 0){
+					for (local nCountt = 0 ; nCountt < this.DateRangeFilters.len(); nCountt++) 
+					{
+						//here we can set the visible display colours for the filters that are applied to the calendar
+						local filter = this.DateRangeFilters[nCountt];
+						local start_result = DateCompare(filter.start, current_date_loop);
+						local end_result = DateCompare(filter.end, current_date_loop);
+
+						if(filter.start.month <= this.month && filter.end.month >= this.month){
+							if(start_result == 1 && end_result == -1){
+								boxColor = filter.color;
+								break;
+							}
+							if(start_result == 0){
+								boxColor = filter.color;
+								break;
+							} 
+							if(end_result == 0){
+								boxColor = filter.color;
+								break;
+							}
+						}
+
+					}
+				}
+				
+				//set the colour of todays date on the box colour
+			 	if(nCount == dateToday.day && this.month == dateToday.month){
+					boxColor = Color().darkgray;
+				} 
+
+				//any day in the past, we dont care about it now, its in the past
+				if(nCount < dateToday.day || this.month < dateToday.month){
+					//boxColor = Color().darkgray
+				}
+				
+				//Now we get to finally create the day object and set its known positions and colours
+				local daynum = nCount;
+				local self = this //get refrernce to this inside dayobject click
+				local DayObject = ButtonObject(this.UI, {
+					identifier="calendar_item",
+					zDepth=2,
+					clickable=true,
+					position={x=0,y=0},
+					size={x=0,y=0},
+					text=nCount,
+					color=boxColor,
+					onClick=function(){
+
+
+						local day = {
+							day=daynum,
+							month=self.month,
+							year=self.year
+						}
+
+						local successfull = false;
+						//we are going to loop through the day filters, if onlyFilterClick is set, we want the calendar to only return that date
+						if(self.onlyFilterClick == true){
+							if(self.DateRangeFilters.len() > 0){
+								for (local nCountt = 0 ; nCountt < self.DateRangeFilters.len(); nCountt++) 
+								{
+
+									local filter = self.DateRangeFilters[nCountt];
+									local start_result = DateCompare(filter.start, current_date_loop);
+									local end_result = DateCompare(filter.end, current_date_loop);
+
+									//Are we inside the current selected month?
+									if(start_result == 1 && end_result == -1){
+										self.selectedDates.push(day);
+										self.dateSelectedCallback(self.selectedDates);
+										successfull = true;
+										break;
+									} 
+									if(start_result == 0){
+										self.selectedDates.push(day);
+										self.dateSelectedCallback(self.selectedDates);
+										successfull = true;
+										break;
+									} 
+									if(end_result == 0){
+										self.selectedDates.push(day);
+										self.dateSelectedCallback(self.selectedDates);
+										successfull = true;
+										break;
+									}
+
+
+								}
+							}
+						} else {
+							self.selectedDates.push(day);
+							self.dateSelectedCallback(self.selectedDates);
+						}
+
+
+
+						if(successfull == false){
+								self.failSelectedCallback();
+						}
+
+
+					}//end click event
+				}); //end dayobject
+
+				//set the day objects constraints so that everything is scalable and when the calendar is resized everything works as per usual.
+				local CC = ConstraintController();
+				CC.setWidth(PercentageConstraint(14.2857));
+				CC.setHeight(PercentageConstraint(16.6666));
+				CC.setX(PercentageConstraint(xPos));
+				CC.setY(PercentageConstraint(yPos));
+
+				DayObject.setConstraintController(CC);
+				this.DayContainer.addChildObject(DayObject);
+				dayOfWeek = dayOfWeek + 1;
+
+
+		}
+
+
+	}
+
+	//add a filter into the objects filter array
+	function addFilter(Filter){
+		this.DateRangeFilters.push(Filter);
+		this.GenerateMonth();
+	}
+
+
+
+}
+
+class CheckboxObject extends DisplayObject{
+
+	checked = false;
+
+	function constructor(UI, options){
+		base.constructor(UI, options)
+
+		this.checked = false;
+		
+		local self = this;
+		this.onClick=function(){
+
+			if(self.checked == true){
+				self.checked = false;
+				UI.redraw();
+			} else {
+				self.checked = true;
+				UI.redraw();
+			}
+
+		}
+
+
+	}
+
+	function paint(){
+		
+				if(this.checked == true){
+					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, Color().green);
+				} else {
+					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, Color().gray);
+				}
+			
+			
+	}
+
+}
+
+//Objects extended from BoxObject
+class BannerObject extends BoxObject{
+
+	function constructor(UI, options){
+		base.constructor(UI, options);
+
+		if("text" in options){
+		
+				//local nMainFont = ICR_CreateFont("Arial", this.fontSize);
+				local nMainFont = UI.createFont("Arial", this.fontSize);
+				local nCurFont = ICR_SelectFont(nMainFont);
+				
+				local nWidth = ICR_GetText_Width(options.text);
+				local nHeight = ICR_GetText_Height(options.text);
+
+				local textBind = null;
+				if("bindText" in options){
+					textBind = options.bindText
+				}
+				
+				this.text = TextObject(UI, {
+					zDepth=1,
+					size={x=nWidth,y=nHeight},
+					clickable=false,
+					//position={x=10,y=10},
+					text=options.text,
+					fontSize=this.fontSize,
+					fontColor=this.fontColor,
+					bindText=textBind
+				});
+				
+				local CC = ConstraintController();
+				CC.setX(CenterConstraint());
+				CC.setY(CenterConstraint());
+				this.text.setConstraintController(CC); //setConstraintController
+				
+				//set text parent to the buttonobject
+				//this.text.setParent(this);
+				
+				//add object to UI Control
+				this.addChildObject(this.text);
+			
+			
+		}
+
+
+	}
+
+}
+
+class ProgressBarObject extends BoxObject{
+
+	PercentBox = null;
+
+	percent = 0;
+
+	bindPercent = null;
+
+	function constructor(UI, options){
+		base.constructor(UI, options);
+
+		if(options.percent){
+
+			this.percent = options.percent;
+
+			local pColor = Color().blue;
+			if("percentColor" in options){
+				pColor = options.percentColor
+			}
+
+			this.PercentBox = BoxObject(UI, {
+				position={x=0,y=0},
+				size={x=0,y=0},
+				color=pColor
+			})
+
+			local constraintControl = ConstraintController();
+			constraintControl.setWidth(PercentageConstraint(this.percent));
+			constraintControl.setHeight(PercentageConstraint(100))
+			this.PercentBox.setConstraintController(constraintControl);
+
+			this.addChildObject(PercentBox);
+
+
+		}
+
+		if("bindPercent" in options){
+			this.bindPercent = options.bindPercent
+		}
+
+	}
+
+	function prepaint(){
+
+		if(this.bindPercent != null){
+			local percent = this.bindPercent();
+			this.percent = percent;
+
+			local constraintControl = ConstraintController();
+			constraintControl.setWidth(PercentageConstraint(this.percent));
+			constraintControl.setHeight(PercentageConstraint(100))
+			this.PercentBox.setConstraintController(constraintControl);
+			
+		}
+
+		base.prepaint()
+	}
+}
