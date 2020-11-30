@@ -1,0 +1,343 @@
+// Short Explation of what script is for here.
+
+
+// Global Variables
+local bDebugPrinting = true;    // debug logging, set this to false before letting it out
+
+// Load Libraries
+dofile("etal\\lib\\keys.moc"); 
+dofile("etal\\lib\\json.moc"); 
+dofile("etal\\lib\\strings.moc"); 
+dofile("etal\\lib\\dates.moc");
+
+dofile("etal\\lib\\timer.moc");
+dofile("etal\\lib\\gui\\gui.moc);
+
+local UI = GUI();
+local TimerControl = TimerController()
+
+/**********************************************************************
+OnInit
+Called when the till starts
+**********************************************************************/
+
+function OnInit()
+{
+    ICR_SetLocalUserData("bDebugPrinting", bDebugPrinting, true);
+    ICR_EnableDebugLog(bDebugPrinting);
+    if(bDebugPrinting)
+    {
+        ICR_SetFeature("CONSOLE",bDebugPrinting);
+        ICR_SetFeature("AUTORESTART",bDebugPrinting);
+    }
+    // After Init pretend we left pgm 3 where we load settings.  
+    AfterModeChange(10,7);
+
+	UI.setTimerController(TimerControl);
+	UI.createWindow("window.xml");
+	UI.disableWindow();
+	UI.debug = false;
+
+	draw_all_objects();
+
+}
+
+function OnWindowPaint(nID){ 
+    UI.runPaintEvents(nID);
+}
+
+function OnMouseEvent(nWindowID, nEvent, nX, nY) {
+	UI.handleMouseEvents(nWindowID,nEvent,nX,nY);
+}
+
+/************************************************************************************
+* OnTimer(nTimerID, nSystemTime)
+* Called when the timer nTimerID from ICR_StartTimer() function has expired.
+*************************************************************************************/
+
+function OnTimer(nTimerID, nSystemTime)
+{
+   TimerControl.run_timers(nTimerID);
+}
+
+
+
+
+/**********************************************************************
+* AfterModeChange
+* Called When Pos changes Modes
+**********************************************************************/
+
+function AfterModeChange(nFrom,nTo)
+{
+    if (nFrom == 10) // Left PGM 3
+    {
+        // Force a Save
+        ICR_SetLocalUserData("bDebugPrinting", false );
+        // Do we need to load any global var from the userdata ? 
+        
+    }
+}
+
+
+/**************************************************************************************
+* BeforeKeyPress()
+* Occurs before any key is pressed. return false to stop the press. true to continue
+***************************************************************************************/
+
+function BeforeKeyPress(nFile,nRecord,nKeytype)
+{
+    if(bDebugPrinting)print("BKP nFile"+nFile+ " nRecord"+nRecord + " nKeytype"+nKeytype);
+    return true; // Carry on and press key.
+}
+
+
+/**********************************************************************
+*AfterKeyPress
+* Occurs after any key is pressed.
+**********************************************************************/
+
+function AfterKeyPress(nFile,nRecord,nKeytype)
+{
+    if(bDebugPrinting)print("AKP nFile"+nFile+ " nRecord"+nRecord + " nKeytype"+nKeytype);
+}
+
+
+/************************************************************************************
+* OnRunScriptKeyPress
+* Occurs when script status key is pressed. 
+*************************************************************************************/
+
+function OnRunScriptKeyPress(nFile, nRecord, nNumber, nValue, nFlag)
+{
+   
+}
+
+/**********************************************************************
+ OnEnterPGMMenu
+ Occurs when we go to PGM3 Etal for script. 
+**********************************************************************/
+
+function OnEnterPGMMenu(nSub)
+{
+    local nID=0;
+    ICR_PurgeProgramSettings();
+    switch(nSub)
+    {
+        case 0:
+            // Main MENU Options 
+            ICR_AdvertiseProgramSetting(" Version Info", "SCRIPTVERINF");
+            break;
+        default:
+            // in case we get somewhere we shouldn't
+            ICR_AdvertiseProgramHeading("This menu doesnot exist");
+            break;
+    }
+}
+
+
+
+
+
+
+function draw_all_objects(){
+
+
+		UI.enableWindow();
+		//UI.debug = true;
+
+		local mainbox = BoxObject(UI, {
+			identifier="Wrapper",
+			zDepth=1,
+			clickable=false,
+			position={x=0,y=0},
+			size={x=0,y=0},
+			color=0xf2f2f2,
+			//borderRadius=20,
+		});
+		local mc = ConstraintController();
+		mc.setWidth(PercentageConstraint(100));
+		mc.setHeight(PercentageConstraint(100));
+		mc.setX(CenterConstraint())
+
+		mainbox.setConstraintController(mc);
+
+		local closeBtn = ButtonObject(UI,{
+			text="Close",
+			color=Color().lightgray,
+			size={x=100,y=35},
+			position={x=0,y=5},
+			onClick=function(){
+				UI.deleteAllObjects();
+				UI.disableWindow();
+				UI.redraw();
+			}
+		})
+		mainbox.addChildObject(closeBtn);
+
+		local title = TextObject(UI,{
+			text="GUI Object Display",
+			fontSize=30,
+			fontColor=Color().lightgray,
+			position={x=400,y=10},
+	
+		});
+
+		mainbox.addChildObject(title);
+		mainbox.addChildObject(closeBtn);
+
+
+
+
+		//TEXT OBJECT
+		
+		local textObjectSample = TextObject(UI,{
+			text="Sample Text Object ",
+			fontSize=27,
+			fontColor=Color().lightgray,
+			position={x=50,y=100},
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Sample Text Object : " + count;
+			}
+		});
+		mainbox.addChildObject(textObjectSample);
+
+		//Box OBJECT
+		local BoxObjectSample = BoxObject(UI,{
+			size={x=80,y=80},
+			color=Color().blue,
+			position={x=320,y=100},
+		});
+		mainbox.addChildObject(BoxObjectSample);
+
+		//Box OBJECT radius
+		local BoxObjectSample = BoxObject(UI,{
+			size={x=40,y=40},
+			color=Color().blue,
+			position={x=410,y=100},
+			borderRadius=10
+		});
+		mainbox.addChildObject(BoxObjectSample);	
+
+		//Box OBJECT
+		local ButtonObjectSample = ButtonObject(UI,{
+			size={x=120,y=40},
+			color=Color().gray,
+			position={x=500,y=100},
+			text="Sample Button",
+			onClick=function(){
+
+				local state = State.getInstance()
+				local stateCounter = state.getState("counter", 0);
+				stateCounter = stateCounter + 1;
+				state.setState("counter", stateCounter);
+				
+			},
+		});
+
+		mainbox.addChildObject(ButtonObjectSample);		
+
+
+
+		//Banner OBJECT
+		local BoxObjectSample = BannerObject(UI,{
+			size={x=300,y=50},
+			color=Color().lightgray,
+			fontColor=Color().black,
+			position={x=700,y=100},
+			text="Banner Text Sample",
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Banner Text Sample : " + count;
+			}
+		});
+		mainbox.addChildObject(BoxObjectSample);
+
+
+		
+		//Box OBJECT radius
+		local TextInputSample = TextInputObject(UI,{
+			identifier="inputbox",
+			zDepth=1,
+			size={x=230,y=30},
+			color=Color().lightgray,
+			fontColor=Color().black,
+			position={x=50,y=250},
+			placeholder="Placeholder here",
+			borderColor=Color().gray
+		});
+		mainbox.addChildObject(TextInputSample);
+
+
+		local progress = ProgressBarObject(UI,{
+			size={x=230,y=20},
+			position={x=340,y=220}
+			color=Color().lightgray,
+			percent=90
+			percentColor=Color().green
+		});
+		mainbox.addChildObject(progress);
+
+		local progress = ProgressBarObject(UI,{
+			size={x=230,y=20},
+			position={x=340,y=245}
+			color=Color().lightgray,
+			percent=50,
+			bindPercent=function(){
+				local s = State.getInstance();
+				return s.getState("counter", 0);
+			}
+		});
+		mainbox.addChildObject(progress);
+
+
+		local progress = ProgressBarObject(UI,{
+			size={x=230,y=20},
+			position={x=340,y=270}
+			color=Color().lightgray,
+			percentColor=Color().red,
+			percent=20
+		});
+		mainbox.addChildObject(progress);
+
+
+		 local mainCalendar = CalendarObject(UI, {
+                                        identifier="calendar",
+                                        zDepth=1,
+                                        clickable=false,
+                                        position={x=640,y=200},
+                                        size={x=0,y=0},
+                                        onlyFilterClick=true,
+                                        selectMultiple=false,
+                                        month=11,
+                                        year=2020,
+                                        dateSelectedCallback=function(selected_dates){
+                                           
+                                        },
+                                        failSelectedCallback=function(){
+
+                                        }
+                            });
+		local ccc = ConstraintController();
+		ccc.setWidth(PercentageConstraint(30));
+		ccc.setHeight(PercentageConstraint(40));
+	
+		mainCalendar.setConstraintController(ccc);
+
+		mainbox.addChildObject(mainCalendar)
+
+
+
+
+
+
+		UI.addObject(mainbox);
+
+		UI.redraw();
+
+
+
+}

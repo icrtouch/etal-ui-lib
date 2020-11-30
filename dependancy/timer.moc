@@ -1,0 +1,91 @@
+class TimerController {
+
+    //timer array item consists of Timer Objects
+    timers = [];
+
+    function constructor(){
+        this.timers = [];
+    }
+
+    function setInterval(callback, timeinms){
+        local createdTimer = Timer(this, callback, timeinms);
+        this.timers.push(createdTimer);
+        return createdTimer;
+    }
+
+    function setTimeout(callback, timeinms){
+
+        local createdTimer = JustOnceTimer(this,callback, timeinms);
+        this.timers.push(createdTimer);
+        return createdTimer;
+
+    }
+
+    function run_timers(nTimerid){
+        //print(nTimerid);
+
+        for(local i = 0; i < this.timers.len(); i++){
+
+            if(this.timers[i].id == nTimerid){
+                      this.timers[i].run();
+                      break;
+            }
+        }
+
+    }
+
+    function removeTimer(timer){
+        for(local i = 0; i < this.timers.len(); i++){
+            if(this.timers[i].id == timer.id){
+                this.timers[i] = null;
+                this.timers.remove(i);
+            }
+        }
+    }
+
+
+}
+
+class Timer {
+
+    id = 0;
+    callback = null;
+    timeinms = null;
+    iteration = 0;
+
+    controller = null
+
+    function constructor(controller, callback, timeinms){
+
+        this.controller = controller;
+        this.callback = callback;
+        this.timeinms = timeinms;
+        this.iteration = 0;
+        this.id = ICR_StartTimer(this.timeinms);
+
+    }
+
+    function run(){
+        this.iteration = this.iteration + 1;
+        if("callback" in this.callback){
+            this.callback.callback(this, this.iteration);
+        }
+    }
+
+    function killTimer(){
+        ICR_StopTimer(this.id);
+        this.controller.removeTimer(this);
+    }
+
+
+}
+
+class JustOnceTimer extends Timer{
+
+    function run(){
+        this.iteration = this.iteration + 1;
+        this.callback.callback(this, this.iteration);
+        this.killTimer();
+    }
+
+}
