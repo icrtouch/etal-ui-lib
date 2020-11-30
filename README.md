@@ -17,6 +17,22 @@ put `/example` into
  `ICRTouch/etal/`
  
  ## GENERAL INFORMATION
+ 
+ ### UI Class
+ The UI Class's role is to manage and control all the display objects.
+ 
+ UI object methods
+  - createWindow(String XMLFile)
+  -- This will tell the UI library which window it should be rendering on.
+  - enableWindow()
+  -- Enables the window to be drawn on touchpoint
+  - disableWindow() 
+  -- Disables the window to be drawn on touchpoint
+  - redraw()
+  -- forces the screen to redraw, you can call this after changes a display objects properties to see the change.
+  - findObject(String identifier)
+  -- if you have given an object an identifier, you can find this object by using this function, it will return the object.
+
  ### DisplayObject
 DisplayObject is the base class to which all other objects that will be rendered is derived from, this creates a flexable system, whereby you can create your own components and the render pipeline will manage all the annoying bits like click handling, z-depth control, constraints and heiarchy management.
 
@@ -52,6 +68,20 @@ Here is a list of all the posible properties, some may not be applicaple, depend
  - text - (String) - The text that will shoe from a textObject
  - onClick - (callback function) - when object is clicked the callback will be called.
  
+
+DisplayObject Methods
+ - addChildObject(DisplayObject object)
+ -- This function will add any other display object as a child of the current object, this can be called on any display object, even if they are themselves a child.
+ - removeAllChildObjects()
+ -- deletes all childObjects of the current object, even children of children.
+ - getParent()
+ -- This function will, if it exists, get the parent object.
+ - setPosition(x,y)
+ -- sets the objects position property
+ - setSize(x,y)
+ -- sets the objects size property
+
+    
 
 ### BoxObject
  ```moc
