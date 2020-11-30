@@ -11,7 +11,7 @@ dofile("etal\\lib\\strings.moc");
 dofile("etal\\lib\\dates.moc");
 
 dofile("etal\\lib\\timer.moc");
-dofile("etal\\lib\\gui\\gui.moc);
+dofile("etal\\lib\\gui\\gui.moc");
 
 local UI = GUI();
 local TimerControl = TimerController()
@@ -196,11 +196,6 @@ function draw_all_objects(){
 			fontSize=27,
 			fontColor=Color().lightgray,
 			position={x=50,y=100},
-			bindText=function(){
-				local s = State.getInstance();
-				local count = s.getState("counter", 0);
-				return "Sample Text Object : " + count;
-			}
 		});
 		mainbox.addChildObject(textObjectSample);
 
@@ -229,16 +224,11 @@ function draw_all_objects(){
 			text="Sample Button",
 			onClick=function(){
 
-				local state = State.getInstance()
-				local stateCounter = state.getState("counter", 0);
-				stateCounter = stateCounter + 1;
-				state.setState("counter", stateCounter);
 				
 			},
 		});
 
 		mainbox.addChildObject(ButtonObjectSample);		
-
 
 
 		//Banner OBJECT
@@ -248,14 +238,9 @@ function draw_all_objects(){
 			fontColor=Color().black,
 			position={x=700,y=100},
 			text="Banner Text Sample",
-			bindText=function(){
-				local s = State.getInstance();
-				local count = s.getState("counter", 0);
-				return "Banner Text Sample : " + count;
-			}
+		
 		});
 		mainbox.addChildObject(BoxObjectSample);
-
 
 		
 		//Box OBJECT radius
@@ -286,10 +271,7 @@ function draw_all_objects(){
 			position={x=340,y=245}
 			color=Color().lightgray,
 			percent=50,
-			bindPercent=function(){
-				local s = State.getInstance();
-				return s.getState("counter", 0);
-			}
+		
 		});
 		mainbox.addChildObject(progress);
 
