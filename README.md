@@ -22,15 +22,17 @@ put `/example` into
  The UI Class's role is to manage and control all the display objects.
  
  UI object methods
-  - createWindow(String XMLFile)
+  - **createWindow(String XMLFile)**
   -- This will tell the UI library which window it should be rendering on.
-  - enableWindow()
+  - **enableWindow()**
   -- Enables the window to be drawn on touchpoint
-  - disableWindow() 
+  - **disableWindow()**
   -- Disables the window to be drawn on touchpoint
-  - redraw()
+  - **redraw()**
   -- forces the screen to redraw, you can call this after changes a display objects properties to see the change.
-  - findObject(String identifier)
+  - **addObject(DisplayObject object)**
+  --  Add a object to the ui object, on the root level. (this in reality only needs to be done once)
+  - **findObject(String identifier)**
   -- if you have given an object an identifier, you can find this object by using this function, it will return the object.
 
  ### DisplayObject
@@ -70,15 +72,15 @@ Here is a list of all the posible properties, some may not be applicaple, depend
  
 
 DisplayObject Methods
- - addChildObject(DisplayObject object)
+ - **addChildObject(DisplayObject object)**
  -- This function will add any other display object as a child of the current object, this can be called on any display object, even if they are themselves a child.
- - removeAllChildObjects()
+ - **removeAllChildObjects()**
  -- deletes all childObjects of the current object, even children of children.
- - getParent()
+ - **getParent()**
  -- This function will, if it exists, get the parent object.
- - setPosition(x,y)
+ - **setPosition(x,y)**
  -- sets the objects position property
- - setSize(x,y)
+ - **setSize(x,y)**
  -- sets the objects size property
 
     
