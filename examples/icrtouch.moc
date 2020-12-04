@@ -152,7 +152,7 @@ function draw_all_objects(){
 			clickable=false,
 			position={x=0,y=0},
 			size={x=0,y=0},
-			color=0xf2f2f2,
+			color=0xfff2f2,
 			//borderRadius=20,
 		});
 		local mc = ConstraintController();
@@ -166,19 +166,22 @@ function draw_all_objects(){
 			text="Close",
 			color=Color().lightgray,
 			size={x=100,y=35},
-			position={x=0,y=5},
+			position={x=10,y=5},
+			borderRadius=5,
 			onClick=function(){
 				UI.deleteAllObjects();
 				UI.disableWindow();
 				UI.redraw();
 			}
 		})
+
 		mainbox.addChildObject(closeBtn);
 
 		local title = TextObject(UI,{
 			text="GUI Object Display",
 			fontSize=30,
 			fontColor=Color().lightgray,
+			fontName="Calibri",
 			position={x=400,y=10},
 	
 		});
@@ -187,15 +190,17 @@ function draw_all_objects(){
 		mainbox.addChildObject(closeBtn);
 
 
-
-
-		//TEXT OBJECT
-		
+		//TEXT OBJECT		
 		local textObjectSample = TextObject(UI,{
 			text="Sample Text Object ",
 			fontSize=27,
 			fontColor=Color().lightgray,
 			position={x=50,y=100},
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Sample Text Object : " + count;
+			}
 		});
 		mainbox.addChildObject(textObjectSample);
 
@@ -207,12 +212,13 @@ function draw_all_objects(){
 		});
 		mainbox.addChildObject(BoxObjectSample);
 
+
 		//Box OBJECT radius
 		local BoxObjectSample = BoxObject(UI,{
-			size={x=40,y=40},
+			size={x=200,y=200},
 			color=Color().blue,
-			position={x=410,y=100},
-			borderRadius=10
+			position={x=20,y=350},
+			borderRadius=100
 		});
 		mainbox.addChildObject(BoxObjectSample);	
 
@@ -222,8 +228,13 @@ function draw_all_objects(){
 			color=Color().gray,
 			position={x=500,y=100},
 			text="Sample Button",
+			borderRadius=5,
 			onClick=function(){
 
+				local state = State.getInstance()
+				local stateCounter = state.getState("counter", 0);
+				stateCounter = stateCounter + 1;
+				state.setState("counter", stateCounter);
 				
 			},
 		});
@@ -238,9 +249,14 @@ function draw_all_objects(){
 			fontColor=Color().black,
 			position={x=700,y=100},
 			text="Banner Text Sample",
-		
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Banner Text Sample : " + count;
+			}
 		});
 		mainbox.addChildObject(BoxObjectSample);
+
 
 		
 		//Box OBJECT radius
@@ -271,7 +287,10 @@ function draw_all_objects(){
 			position={x=340,y=245}
 			color=Color().lightgray,
 			percent=50,
-		
+			bindPercent=function(){
+				local s = State.getInstance();
+				return s.getState("counter", 0);
+			}
 		});
 		mainbox.addChildObject(progress);
 

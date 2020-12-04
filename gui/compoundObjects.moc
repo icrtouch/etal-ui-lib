@@ -4,11 +4,45 @@ dofile("etal\\lib\\dates.moc");
 class ButtonObject extends DisplayObject{
 	
 	text = null;
-
+	fontSize=20;
+	fontColor = 0xFFFFFF;
+	borderRadius = 0;
 	buttonState = 0;
 
 	function constructor(UI, options){
 		base.constructor(UI, options)
+
+
+			//if this has a font, it will use this
+		if("fontSize" in options){
+			this.fontSize = options.fontSize;
+		} else {
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options){
+			this.fontColor = options.fontColor;
+		} else {
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options){
+			this.text = options.text;
+		} else {
+			this.text = "";
+		}
+
+		//if this has borderradius enabled, it will use this
+		if("borderRadius" in options){
+			this.borderRadius = options.borderRadius;
+		}
+
+
+
+
+
 		
 		this.buttonState = 0;
 		//If the button has text lets build it and add it as a child to the button
@@ -97,52 +131,45 @@ class ButtonObject extends DisplayObject{
 				local PI = 3.1415926535;
 				  
 				  
-				//topleft
-			    ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
-			    for(local i = 0; i < 360; i += resolution)
-			    {
-					local angle = i;
-					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
-					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
-					ICR_DrawPixel(topleft.x+radius + x1, topleft.y+radius + y1, this.options.color);
-			    }
-			    ICR_FloodFill(topleft.x+radius, topleft.y+radius, this.options.color); 
 				
+				 ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
+				 local nY1 = floor(sin(90) * radius).tointeger();
+				 local nX1 = floor(cos(90) * radius).tointeger();
+
+				 local nY2 = floor(sin(90) * radius).tointeger();
+        		 local nX2 = floor(cos(90) * radius).tointeger();
+				 ICR_DrawPie(topleft.x, topleft.y, radius*2, radius*2, topleft.x+ radius+nX1,   topleft.y+radius+nY1,    topleft.x+ radius+nX2  , topleft.y+radius+nY2,this.options.color, this.options.color);
+
+
+
+				 ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
+				 local nY1 = floor(sin(90) * radius).tointeger();
+				 local nX1 = floor(cos(90) * radius).tointeger();
+
+				 local nY2 = floor(sin(90) * radius).tointeger();
+        		 local nX2 = floor(cos(90) * radius).tointeger();
+				 ICR_DrawPie(topright.x-radius*2, topright.y, radius*2, radius*2, topright.x+ radius+nX1,   topright.y+radius+nY1,    topright.x+ radius+nX2  , topright.y+radius+nY2,this.options.color, this.options.color);
 				
-				//topright
-				ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
-			    for(local i = 0; i < 360; i += resolution)
-			    {
-					local angle = i;
-					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
-					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
-					ICR_DrawPixel((topright.x-radius+1) + x1, topright.y+radius + y1, this.options.color);
-			    }
-			    ICR_FloodFill(topright.x-radius, topright.y+radius, this.options.color); 
-				
-				  
-				  				
-				//bottomleft
-				ICR_DrawBox(bottomleft.x, bottomleft.y-radius , radius, radius, bottomleftcolor);
-			    for(local i = 0; i < 360; i += resolution)
-			    {
-					local angle = i;
-					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
-					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
-					ICR_DrawPixel(bottomleft.x+radius + x1, bottomleft.y-radius + y1, this.options.color);
-			    }
-			    ICR_FloodFill(bottomleft.x+radius, bottomleft.y-radius, this.options.color); 
-				
-				 //bottomright
+
+				ICR_DrawBox(bottomleft.x, bottomleft.y-radius , radius, radius,bottomleftcolor);
+				 local nY1 = floor(sin(90) * radius).tointeger();
+				 local nX1 = floor(cos(90) * radius).tointeger();
+
+				 local nY2 = floor(sin(90) * radius).tointeger();
+        		 local nX2 = floor(cos(90) * radius).tointeger();
+				 ICR_DrawPie(bottomleft.x, bottomleft.y-radius*2, radius*2, radius*2, bottomleft.x+ radius+nX1,   bottomleft.y+radius+nY1,    bottomleft.x+ radius+nX2  , bottomleft.y+radius+nY2,this.options.color, this.options.color);
+
+
+
 				ICR_DrawBox(bottomright.x-radius, bottomright.y-radius , radius, radius, bottomrightcolor);
-			    for(local i = 0; i < 360; i += resolution)
-			    {
-					local angle = i;
-					local x1 = floor(radius * cos(angle * PI / 180)).tointeger();
-					local y1 = floor(radius * sin(angle * PI / 180)).tointeger();
-					ICR_DrawPixel((bottomright.x-radius+1) + x1, bottomright.y-radius + y1, this.options.color);
-			    }
-			    ICR_FloodFill(bottomright.x-radius, bottomright.y-radius, this.options.color); 
+				 local nY1 = floor(sin(90) * radius).tointeger();
+				 local nX1 = floor(cos(90) * radius).tointeger();
+
+				 local nY2 = floor(sin(90) * radius).tointeger();
+        		 local nX2 = floor(cos(90) * radius).tointeger();
+				 ICR_DrawPie(bottomright.x-radius*2, bottomright.y-radius*2, radius*2, radius*2, bottomright.x+ radius+nX1,   bottomright.y+radius+nY1,    bottomright.x+ radius+nX2  , bottomright.y+radius+nY2,this.options.color, this.options.color);
+
+
 				
 				  
 				  
@@ -175,10 +202,35 @@ class TextInputObject extends DisplayObject{
 	placeholder = "";
 	textObject = null;
 	
+	text = "";
+	fontSize=20;
+	fontColor = 0xFFFFFF;
 
 
 	function constructor(UI, options){
 		base.constructor(UI, options);
+
+		//if this has a font, it will use this
+		if("fontSize" in options){
+			this.fontSize = options.fontSize;
+		} else {
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options){
+			this.fontColor = options.fontColor;
+		} else {
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options){
+			this.text = options.text;
+		} else {
+			this.text = "";
+		}
+
 
 		if("placeholder" in options){
 			this.placeholder = options.placeholder;
@@ -777,9 +829,35 @@ class CalendarObject extends DisplayObject{
 		dateSelectedCallback=null;
 		failSelectedCallback=null;
 
+		text = "";
+		fontSize=20;
+		fontColor = 0xFFFFFF;
+
 
 	function constructor(UI, options){
 		base.constructor(UI, options);
+
+		//if this has a font, it will use this
+		if("fontSize" in options){
+			this.fontSize = options.fontSize;
+		} else {
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options){
+			this.fontColor = options.fontColor;
+		} else {
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options){
+			this.text = options.text;
+		} else {
+			this.text = "";
+		}
+
 
 		if("month" in options){
 			this.month = options.month;
@@ -1228,8 +1306,35 @@ class CheckboxObject extends DisplayObject{
 //Objects extended from BoxObject
 class BannerObject extends BoxObject{
 
+	text = "";
+	fontSize=20;
+	fontColor = 0xFFFFFF;
+
 	function constructor(UI, options){
 		base.constructor(UI, options);
+
+
+		//if this has a font, it will use this
+		if("fontSize" in options){
+			this.fontSize = options.fontSize;
+		} else {
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options){
+			this.fontColor = options.fontColor;
+		} else {
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options){
+			this.text = options.text;
+		} else {
+			this.text = "";
+		}
+
 
 		if("text" in options){
 		
