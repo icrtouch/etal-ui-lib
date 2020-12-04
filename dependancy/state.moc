@@ -1,0 +1,57 @@
+class State {
+
+    static instance = {};
+    states = {};
+	stateCallback = {};
+
+    function constructor(){
+      this.stateCallback = {};
+	  this.states = {};
+    }
+
+    static function getInstance(){
+
+       if(instance.len() == 0){
+           instance.instance <- this;
+           return instance.instance;
+       } else {
+           return instance.instance;
+       }
+
+    }
+
+	function getState(name, defaultValue){
+        if(name in this.states){
+		    return this.states[name];
+        } else {
+            return defaultValue;
+        }
+	}
+
+	function setState(name, value){
+		this.states[name] <- value;
+		if("callback" in this.stateCallback){
+			this.stateCallback.callback.callback();
+		}
+	}
+
+	function setStateCallback(callback){
+		this.stateCallback.callback <- callback;
+	}
+
+
+}
+/*
+local singletonobj = State.getInstance();
+singletonobj.setState("testing", "values");
+print(singletonobj.tostring());
+
+local singletonobj1 = State.getInstance();
+
+print(singletonobj1.tostring());
+
+local singletonobj2 = State.getInstance();
+
+print(singletonobj2.tostring());
+print(singletonobj2.getState("testing"));
+ */
