@@ -739,7 +739,6 @@ class ModalObject extends DisplayObject{
 		}
 
 
-
 		//Generate
 		this.ContentBox = BoxObject(UI, {
 			size={x=0,y=0},

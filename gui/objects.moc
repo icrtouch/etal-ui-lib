@@ -208,7 +208,7 @@ class DisplayObject{
 		if(Parent != null){
 			//print(Parent.ID);
 			//relative position
-			this.relpos = {x=(this.pos.x+Parent.relpos.x),y=(this.pos.y+Parent.relpos.y)};
+			this.relpos = {x=floor(this.pos.x+Parent.relpos.x),y=floor(this.pos.y+Parent.relpos.y)};
 		} else {
 			//absolute position
 			this.relpos = this.pos;
@@ -257,7 +257,7 @@ class DisplayObject{
 			local nMainFont = ICR_CreateFont("Arial", 12);
 			local nCurFont = ICR_SelectFont(nMainFont);
 			ICR_SetText_Colour(0x000000);
-			local debugtext = "id:"+this.ID+", p:"+this.parentObjectID+", identifer:"+this.identifier+", "+"Z:"+this.relZDepth+", x:"+this.relpos.x+", y:"+this.relpos.y;
+			local debugtext = "id:"+this.ID+", p:"+this.parentObjectID+", identifer:"+this.identifier+", "+"Z:"+this.relZDepth+", x:"+this.relpos.x+", y:"+this.relpos.y+", h:"+this.size.y;
 			ICR_DrawText(this.relpos.x, this.relpos.y-10, debugtext);
 
 	}
@@ -278,9 +278,6 @@ class DisplayObject{
 /*
 	Now comes polymorphic CORE classes for different goals, like boxes, text lines ect
 */
-
-
-
 
 class BoxObject extends DisplayObject{
 
@@ -474,6 +471,44 @@ class TextObject extends DisplayObject{
 }
 
 
+class ImageObject extends DisplayObject{
+
+	imagePath = "";
+	nImageID = 0;
+
+	imageSize = {x = 100,y = 100};
+
+	function constructor(ui, options){
+		base.constructor(ui, options);
+
+		if("imagePath" in options){
+			this.imagePath = options.imagePath;
+		} else {
+			this.imagePath = "";
+		}
+
+
+		//loading image should be done on the construct
+		//because otherwise it will be done on every render, thats bad.
+		this.nImageID = ICR_LoadImage(this.imagePath);
+		local size = ICR_GetImageSize(this.nImageID);
+		this.imageSize = {x=size.WIDTH, y=size.HEIGHT};
+		
+
+	}
+
+	function prepaint(){
+		base.prepaint()
+	}
+
+	function paint(){
+
+			ICR_SelectImage(this.nImageID);
+			ICR_DrawImage(this.relpos.x, this.relpos.y, this.size.x, this.size.y);
+
+	}
+
+}
 
 
 

@@ -117,37 +117,37 @@ class PercentageConstraint extends Constraint {
 		if(Parent){
 
 			if(this.attribute == "x"){
-				object.relpos = {x=(Parent.relpos.x + (Parent.size.x*(this.percentage / 100.0))), y=object.relpos.y};
+				object.relpos = {x=(floor(Parent.relpos.x + (Parent.size.x*(this.percentage / 100.0)))), y=object.relpos.y};
 			}
 
 			if(this.attribute == "y"){
-				object.relpos = {y=(Parent.relpos.y + (Parent.size.y*(this.percentage / 100.0))), x=object.relpos.x};
+				object.relpos = {y=(floor(Parent.relpos.y + (Parent.size.y*(this.percentage / 100.0)))), x=object.relpos.x};
 			}
 
 			if(this.attribute == "width"){
-				object.size = {y=object.size.y, x=((Parent.size.x*(this.percentage / 100.0)))}
+				object.size = {y=object.size.y, x=(floor((Parent.size.x*(this.percentage / 100.0))))}
 				
 			}
 			if(this.attribute == "height"){
-				object.size = {x=object.size.x, y=((Parent.size.y*(this.percentage / 100.0)))}
+				object.size = {x=object.size.x, y=(floor((Parent.size.y*(this.percentage / 100.0))))}
 			}
 			
 		} else {
 
 			if(this.attribute == "x"){
-				object.relpos = {x=(0 + (object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0))), y=object.relpos.y};
+				object.relpos = {x=(0 + (floor(object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0)))), y=object.relpos.y};
 			}
 
 			if(this.attribute == "y"){
-				object.relpos = {y=(0 + (object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0))), x=object.relpos.y};
+				object.relpos = {y=(0 + (floor(object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0)))), x=object.relpos.y};
 			}
 
 			
 			if(this.attribute == "width"){
-				object.size = {y=object.size.y, x=((object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0)))}
+				object.size = {y=object.size.y, x=(floor((object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0))))}
 			}
 			if(this.attribute == "height"){
-				object.size = {x=object.size.x, y=((object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0)))}
+				object.size = {x=object.size.x, y=(floor((object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0))))}
 			}
 
 

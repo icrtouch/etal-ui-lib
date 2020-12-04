@@ -24,6 +24,7 @@ stateManagement.setStateCallback({
 	}
 })
 
+
 local AnimationTimer = null;
 local growing = true;
 
@@ -313,6 +314,7 @@ function draw_all_objects(){
 		mainbox.addChildObject(progress);
 
 
+
 		 local mainCalendar = CalendarObject(UI, {
                                         identifier="calendar",
                                         zDepth=1,
@@ -339,7 +341,7 @@ function draw_all_objects(){
 
 
 
-			//Box OBJECT radius
+		//Box OBJECT with a border radius, (curved corners)
 		local BoxObjectSample = BoxObject(UI,{
 			identifier="AnimationBox"
 			size={x=300,y=300},
@@ -349,8 +351,23 @@ function draw_all_objects(){
 		});
 		mainbox.addChildObject(BoxObjectSample);	
 
+		//lets add an image, and tell it to center y,
+		// and we want it touching the right edge of the bigger box
+		local ImageBox = ImageObject(UI,{
+			zDepth=1,
+			size={x=100,y=100},
+			imagePath="image.bmp",
+			position={x=0,y=100},
+		});
+		local cc = ConstraintController();
+		
+		cc.setX(PercentageConstraint(100))
+		cc.setY(CenterConstraint())
+		ImageBox.setConstraintController(cc);
+		BoxObjectSample.addChildObject(ImageBox);	
 
-		//EVERYTHING HERE GOES INSIDE BOXOBJECTSAMPLE
+
+		//Add a smaller Blue box inside this box and center it
 		local innerBoxObjectSample = BoxObject(UI,{
 			size={x=100,y=100},
 			color=Color().blue,
@@ -364,10 +381,9 @@ function draw_all_objects(){
 		cc.setY(CenterConstraint());
 		BoxObjectSample.addChildObject(innerBoxObjectSample)
 
-
+		//lets add some text to the center of that box
 		local textInner = TextObject(UI, {
 			text="Easy Centering",
-		
 		})
 		local cct = ConstraintController()
 		cct.setX(CenterConstraint())
@@ -415,9 +431,48 @@ function draw_all_objects(){
 		ccb.setX(CenterConstraint())
 		ClickToAnimate.setConstraintController(ccb);
 		BoxObjectSample.addChildObject(ClickToAnimate)
-
 		innerBoxObjectSample.setConstraintController(cc);
+
+
+
+		local openModal = ButtonObject(UI, {
+			text="Open Modal",
+			position={x=720,y=550},
+			size={x=120,y=40},
+			color=Color().gray,
+			onClick=function(){
+				local Modal = ModalObject(UI, {
+					position={x=0,y=0},
+					size={x=0,y=0},
+					color=0xf2f2f2,
+					zDepth=10,
+					DoneCallback={
+						callback=function(){
+								
+						}
+					}
+				})
+				local constrain = ConstraintController();
+				constrain.setWidth(PercentageConstraint(50));
+				constrain.setHeight(PercentageConstraint(50));
+				constrain.setX(CenterConstraint());
+				constrain.setY(CenterConstraint())
+				Modal.setConstraintController(constrain);
+
+				local modalContent = TextObject(UI,{
+					text="This is inside the modal",
+					fontColor=Color().black
+				});
+				Modal.addContent(modalContent);
+
+				
+				mainbox.addChildObject(Modal)
+			}
+		})
+
 		
+
+		mainbox.addChildObject(openModal)
 
 
 
