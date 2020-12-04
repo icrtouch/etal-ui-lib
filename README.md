@@ -15,10 +15,9 @@ Dependencies
 Example of UI library
 put `/example` into
  `ICRTouch/etal/`
- 
- ## GENERAL INFORMATION
- 
- ### UI Class
+
+
+ # UI Class
  The UI Class's role is to manage and control all the display objects.
  
  UI object methods
@@ -34,6 +33,9 @@ put `/example` into
   --  Add a object to the ui object, on the root level. (this in reality only needs to be done once)
   - **findObject(String identifier)**
   -- if you have given an object an identifier, you can find this object by using this function, it will return the object.
+ 
+ # Display Objects
+
 
  ### DisplayObject
 DisplayObject is the base class to which all other objects that will be rendered is derived from, this creates a flexable system, whereby you can create your own components and the render pipeline will manage all the annoying bits like click handling, z-depth control, constraints and heiarchy management.
@@ -123,4 +125,42 @@ Here is a list of all the properties that are specific to boxObjects
  - zDepth - (int) relative z-depth of all objects on the same heiarchy level
  - fontSize - (int) - font size of any textObject
  - fontColor - (0xf2f2f2) - colour of the font of any textObject
+ - fontName - (String) - font name/type that the text will use.
  - text - (String) - The text that will shoe from a textObject
+
+
+ # Constraint Controllers
+ Constraint controllers are the backbone of the GUI library, it allows easy and dynamic capabilities with very minimal code
+ for example, setting the width of a box to a percentage, or even centering the box on the x or y or both axis. 
+ 
+ An example of a constraint controller being centered would be as follows
+ ```moc
+	 local MyBox = BoxObject(UI, {
+			identifier="CenterME",
+			zDepth=1,
+			clickable=false,
+			size={x=50,y=50},
+			color=0xff0000,
+		});
+	local cc = ConstraintController()
+	cc.setX(CenterConstraint())
+	cc.setY(CenterConstraint())
+	myBox.setConstraintController(cc)
+ ```
+As you can see, with very little code you can center a box perfectly.
+Note how we did not need to provide a position for the box, as the constraint controller now "Controls" those properties
+
+At current there are two types of constraint controllers
+CenterConstraint() & PercentConstraint
+
+Here I will list what properties each can control
+
+**CenterConstraint()**
+ - X position
+ - Y position
+
+**PercentConstraint()**
+ - X position
+ - Y position
+ - Width
+ - Height
