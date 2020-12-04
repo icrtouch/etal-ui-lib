@@ -10,6 +10,7 @@ put the GUI folder in this location
 
 Dependencies 
  - TimerControl Library, add into `/ICRTouch/etal/lib/`
+ - StateManagement Library, add into `/ICRTouch/etal/lib/`
  
 
 Example of UI library
@@ -149,6 +150,12 @@ Here is a list of all the properties that are specific to boxObjects
  ```
 As you can see, with very little code you can center a box perfectly.
 Note how we did not need to provide a position for the box, as the constraint controller now "Controls" those properties
+
+The constraintController itself has 4 methods they are as follows, each method take in a Constraint type Object
+ - setX(Controller)
+ - setY(Controller)
+ - setWidth(Controller)
+ - setHeight(Controller)
 
 At current there are two types of constraint controllers
 CenterConstraint() & PercentConstraint
