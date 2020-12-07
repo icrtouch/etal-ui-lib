@@ -228,7 +228,6 @@ function draw_all_objects(){
 		});
 		mainbox.addChildObject(BoxObjectSample);
 
-
 	
 
 		//Box OBJECT
@@ -237,7 +236,7 @@ function draw_all_objects(){
 			color=Color().gray,
 			position={x=500,y=100},
 			text="Sample Button",
-		
+			borderRadius=10,
 			onClick=function(){
 
 				local state = State.getInstance()
@@ -247,9 +246,7 @@ function draw_all_objects(){
 				
 			},
 		});
-
 		mainbox.addChildObject(ButtonObjectSample);		
-
 
 		//Banner OBJECT
 		local BoxObjectSample = BannerObject(UI,{
@@ -265,7 +262,6 @@ function draw_all_objects(){
 			}
 		});
 		mainbox.addChildObject(BoxObjectSample);
-
 
 		
 		//Box OBJECT radius
@@ -339,8 +335,6 @@ function draw_all_objects(){
 		mainbox.addChildObject(mainCalendar)
 
 
-
-
 		//Box OBJECT with a border radius, (curved corners)
 		local BoxObjectSample = BoxObject(UI,{
 			identifier="AnimationBox"
@@ -350,22 +344,6 @@ function draw_all_objects(){
 			borderRadius=20
 		});
 		mainbox.addChildObject(BoxObjectSample);	
-
-		//lets add an image, and tell it to center y,
-		// and we want it touching the right edge of the bigger box
-		local ImageBox = ImageObject(UI,{
-			zDepth=1,
-			size={x=100,y=100},
-			imagePath="image.bmp",
-			position={x=0,y=100},
-		});
-		local cc = ConstraintController();
-		
-		cc.setX(PercentageConstraint(100))
-		cc.setY(CenterConstraint())
-		ImageBox.setConstraintController(cc);
-		BoxObjectSample.addChildObject(ImageBox);	
-
 
 		//Add a smaller Blue box inside this box and center it
 		local innerBoxObjectSample = BoxObject(UI,{
@@ -422,7 +400,7 @@ function draw_all_objects(){
 						box.setSize(cwidth, box.size.y);
 						UI.redraw();
 					}
-				}}, 5)
+				}}, 3)
 
 			}
 
@@ -471,7 +449,6 @@ function draw_all_objects(){
 		})
 
 		
-
 		mainbox.addChildObject(openModal)
 
 

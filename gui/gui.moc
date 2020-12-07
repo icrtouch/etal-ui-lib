@@ -144,16 +144,11 @@ class GUI{
 	this.TimerController.setTimeout({callback=function(timer,i){
 		self.bWinOpen = false;
 	}},500);
-	
-	
-
  }
  
  function redraw(){
 	 collectgarbage();
-
 	 ICR_RedrawScreen();
-
  }
 
  function redrawWindow(){
@@ -166,14 +161,7 @@ class GUI{
  }
  
  function removeDisplayObject(ID){
-
-
 	 this.recursivlyRemoveDisplayObject(ID, this.displayObjects);
-
-	 //this.docount = 0;
-	 //this.countAllDisplayObjects(this.displayObjects);
-	 //print("DO:"+this.docount);
-	
  }
 
  function countAllDisplayObjects(objects){

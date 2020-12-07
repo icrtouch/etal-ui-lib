@@ -40,10 +40,6 @@ class ButtonObject extends DisplayObject{
 		}
 
 
-
-
-
-		
 		this.buttonState = 0;
 		//If the button has text lets build it and add it as a child to the button
 		if("text" in options){
@@ -94,45 +90,28 @@ class ButtonObject extends DisplayObject{
 		}
 	}
 
-	function paint(){
-		
-			
-			//Now draw the border radius over the created BOX
-			if(this.borderRadius > 0){
-			
-			
-				//borderRadius
-				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
-				//for now we just check one pixel as we dont want to use too much cpu time
-	
-					
-				local topleft = {x=this.relpos.x,y=this.relpos.y};
-				local topright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y)};
-				local bottomleft = {x=this.relpos.x,y=(this.relpos.y+this.size.y)};
-				local bottomright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y+this.size.y)};
+
+	function drawBoxWithRadius(sizeExpand){
+			    local topleft = {x=this.relpos.x-sizeExpand,y=this.relpos.y-sizeExpand};
+				local topright = {x=(this.relpos.x+this.size.x+sizeExpand),y=(this.relpos.y-sizeExpand)};
+				local bottomleft = {x=this.relpos.x-sizeExpand,y=(this.relpos.y+this.size.y+sizeExpand)};
+				local bottomright = {x=(this.relpos.x+this.size.x+sizeExpand),y=(this.relpos.y+this.size.y+sizeExpand)};
 						
 				local topleftcolor = ICR_GetPixel(topleft.x,topleft.y);
 				local toprightcolor = ICR_GetPixel(topright.x,topright.y);
 				local bottomleftcolor = ICR_GetPixel(bottomleft.x,bottomleft.y);
 				local bottomrightcolor = ICR_GetPixel(bottomright.x,bottomright.y);
-			
-			
-			
-				
 				//DRAW MAIN BOX
-				ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
-			
-			
+				ICR_DrawBox(this.relpos.x-sizeExpand, this.relpos.y-sizeExpand, this.size.x + (sizeExpand*2), this.size.y + (sizeExpand*2), this.options.color);
 				//lets do this
 				
 				local resolution = 1;
-				
 				local radius = this.borderRadius;
 				local PI = 3.1415926535;
-				  
-				  
-				
-				 ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
+
+				 
+
+				 ICR_DrawBox(topleft.x-sizeExpand, topleft.y-sizeExpand , radius, radius, topleftcolor);
 				 local nY1 = floor(sin(90) * radius).tointeger();
 				 local nX1 = floor(cos(90) * radius).tointeger();
 
@@ -142,7 +121,7 @@ class ButtonObject extends DisplayObject{
 
 
 
-				 ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
+				 ICR_DrawBox(topright.x-radius+sizeExpand, topright.y-sizeExpand , radius, radius, toprightcolor);
 				 local nY1 = floor(sin(90) * radius).tointeger();
 				 local nX1 = floor(cos(90) * radius).tointeger();
 
@@ -151,7 +130,7 @@ class ButtonObject extends DisplayObject{
 				 ICR_DrawPie(topright.x-radius*2, topright.y, radius*2, radius*2, topright.x+ radius+nX1,   topright.y+radius+nY1,    topright.x+ radius+nX2  , topright.y+radius+nY2,this.options.color, this.options.color);
 				
 
-				ICR_DrawBox(bottomleft.x, bottomleft.y-radius , radius, radius,bottomleftcolor);
+				ICR_DrawBox(bottomleft.x-sizeExpand, bottomleft.y-radius+sizeExpand , radius, radius,bottomleftcolor);
 				 local nY1 = floor(sin(90) * radius).tointeger();
 				 local nX1 = floor(cos(90) * radius).tointeger();
 
@@ -161,7 +140,7 @@ class ButtonObject extends DisplayObject{
 
 
 
-				ICR_DrawBox(bottomright.x-radius, bottomright.y-radius , radius, radius, bottomrightcolor);
+				ICR_DrawBox(bottomright.x-radius+sizeExpand, bottomright.y-radius+sizeExpand , radius, radius, bottomrightcolor);
 				 local nY1 = floor(sin(90) * radius).tointeger();
 				 local nX1 = floor(cos(90) * radius).tointeger();
 
@@ -170,10 +149,21 @@ class ButtonObject extends DisplayObject{
 				 ICR_DrawPie(bottomright.x-radius*2, bottomright.y-radius*2, radius*2, radius*2, bottomright.x+ radius+nX1,   bottomright.y+radius+nY1,    bottomright.x+ radius+nX2  , bottomright.y+radius+nY2,this.options.color, this.options.color);
 
 
-				
-				  
-				  
-							
+	}
+
+	function paint(){
+		
+			
+			//Now draw the border radius over the created BOX
+			if(this.borderRadius > 0){
+				//borderRadius
+				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
+				//for now we just check one pixel as we dont want to use too much cpu time
+				if(this.buttonState == 0){
+					drawBoxWithRadius(0)
+				} else if(this.buttonState == 1) {
+					drawBoxWithRadius(2)
+				}
 			
 			} else {
 				//No radius, just draw the box
@@ -757,6 +747,7 @@ class ModalObject extends DisplayObject{
 		local donebox = BoxObject(UI, {
 			size={x=0,y=60},
 			position={x=0,y=0},
+			zDepth=20,
 			color=this.DoneBoxBgColor,
 		});
 		local doneboxConst = ConstraintController();
@@ -1363,6 +1354,7 @@ class BannerObject extends BoxObject{
 				local CC = ConstraintController();
 				CC.setX(CenterConstraint());
 				CC.setY(CenterConstraint());
+				CC.setWidth(PercentageConstraint(100))
 				this.text.setConstraintController(CC); //setConstraintController
 				
 				//set text parent to the buttonobject

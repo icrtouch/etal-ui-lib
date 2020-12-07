@@ -303,21 +303,8 @@ class BoxObject extends DisplayObject{
 
 	}
 
-
-	function paint(){
-	
-		
-			
-			//Now draw the border radius over the created BOX
-			if(this.borderRadius > 0){
-			
-			
-				//borderRadius
-				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
-				//for now we just check one pixel as we dont want to use too much cpu time
-	
-					
-				local topleft = {x=this.relpos.x,y=this.relpos.y};
+	function drawBoxWithRadius(){
+			local topleft = {x=this.relpos.x,y=this.relpos.y};
 				local topright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y)};
 				local bottomleft = {x=this.relpos.x,y=(this.relpos.y+this.size.y)};
 				local bottomright = {x=(this.relpos.x+this.size.x),y=(this.relpos.y+this.size.y)};
@@ -326,22 +313,13 @@ class BoxObject extends DisplayObject{
 				local toprightcolor = ICR_GetPixel(topright.x,topright.y);
 				local bottomleftcolor = ICR_GetPixel(bottomleft.x,bottomleft.y);
 				local bottomrightcolor = ICR_GetPixel(bottomright.x,bottomright.y);
-			
-			
-			
-				
 				//DRAW MAIN BOX
 				ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
-			
-			
 				//lets do this
 				
 				local resolution = 1;
-				
 				local radius = this.borderRadius;
 				local PI = 3.1415926535;
-				  
-				  
 
 				 ICR_DrawBox(topleft.x, topleft.y , radius, radius, topleftcolor);
 				 local nY1 = floor(sin(90) * radius).tointeger();
@@ -381,7 +359,19 @@ class BoxObject extends DisplayObject{
 				 ICR_DrawPie(bottomright.x-radius*2, bottomright.y-radius*2, radius*2, radius*2, bottomright.x+ radius+nX1,   bottomright.y+radius+nY1,    bottomright.x+ radius+nX2  , bottomright.y+radius+nY2,this.options.color, this.options.color);
 
 
-							
+	}
+
+
+	function paint(){
+	
+		
+			
+			//Now draw the border radius over the created BOX
+			if(this.borderRadius > 0){
+			
+				//we want to check BEFORE we draw our box, so that we get the colors underneith the box
+				//for now we just check one pixel as we dont want to use too much cpu time
+				drawBoxWithRadius()
 			
 			} else {
 				//No radius, just draw the box
