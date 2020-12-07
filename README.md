@@ -1,8 +1,8 @@
 # etal-ui-lib
 ETAL User interface library 
 
-This repository is an unofficial project by an ICRTouch developer, and as such comes with no warranty or support.
-Use at your own risk. Please be aware that sales records and program data could be affected.
+**This repository is an unofficial project by an ICRTouch developer, and as such comes with no warranty or support.**
+**Use at your own risk. Please be aware that sales records and program data could be affected.**
 
 To use this library
 put the GUI folder in this location 
@@ -72,7 +72,7 @@ Here is a list of all the posible properties, some may not be applicaple, depend
  - borderRadius - (int) - adds a curved edge to any boxObject
  - fontSize - (int) - font size of any textObject
  - fontColor - (0xf2f2f2) - colour of the font of any textObject
- - text - (String) - The text that will shoe from a textObject
+ - text - (String) - The text that will show from a textObject
  - onClick - (callback function) - when object is clicked the callback will be called.
  
 
@@ -160,7 +160,7 @@ The constraintController itself has 4 methods they are as follows, each method t
  - setHeight(Controller)
 
 At current there are two types of constraint controllers
-CenterConstraint() & PercentConstraint
+CenterConstraint() & PercentConstraint()
 
 Here I will list what properties each can control
 

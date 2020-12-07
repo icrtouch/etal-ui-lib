@@ -26,8 +26,9 @@ stateManagement.setStateCallback({
 
 
 local AnimationTimer = null;
-local growing = true;
 
+local growing = true;
+local containerGrowing = false;
 /**********************************************************************
 OnInit
 Called when the till starts
@@ -155,7 +156,6 @@ function OnEnterPGMMenu(nSub)
 
 
 
-
 function draw_all_objects(){
 
 
@@ -180,10 +180,12 @@ function draw_all_objects(){
 
 
 		local Container = BoxObject(UI, {
-			color=0xf2f2f2
+			identifier="Container"
+			color=0xf2f2f2,
+			size={x=900,y=700}
 		})
 		local ccc = ConstraintController();
-		ccc.setWidth(PercentageConstraint(90));
+		//ccc.setWidth(PercentageConstraint(90));
 		ccc.setHeight(PercentageConstraint(80));
 		ccc.setX(CenterConstraint());
 		ccc.setY(CenterConstraint());
@@ -393,7 +395,6 @@ function draw_all_objects(){
 		innerBoxObjectSample.addChildObject(textInner)
 
 
-
 		local ClickToAnimate = ButtonObject(UI, {
 			text="Click To Animate",
 			color=Color().gray,
@@ -408,9 +409,9 @@ function draw_all_objects(){
 						if(box != null){
 						local cwidth = box.size.x;
 						if(growing == true){
-							cwidth = cwidth + 10;
+							cwidth = cwidth + 20;
 						} else {
-							cwidth = cwidth - 10;
+							cwidth = cwidth - 20;
 						}
 
 						if(cwidth > 500){
@@ -435,11 +436,11 @@ function draw_all_objects(){
 		innerBoxObjectSample.setConstraintController(cc);
 
 
-
 		local openModal = ButtonObject(UI, {
 			text="Open Modal",
 			position={x=10,y=410},
 			size={x=120,y=40},
+			zDepth=20,
 			color=Color().gray,
 			onClick=function(){
 				local Modal = ModalObject(UI, {
@@ -471,14 +472,47 @@ function draw_all_objects(){
 			}
 		})
 
-		
+		local ClickToAnimateBig = ButtonObject(UI, {
+			text="Click To Animate Whole Area",
+			color=Color().danger_btn_bg,
+			size={x=250,y=40},
+			position={x=10,y=480},
+			zDepth=20
+			onClick=function(){
+				print("Clicked");
+				AnimationTimer = TimerControl.setInterval({callback=function(timer,i){
+
+					local box = UI.findObject("Container")
+						if(box != null){
+						local cwidth = box.size.x;
+						if(containerGrowing == true){
+							cwidth = cwidth + 10;
+						} else {
+							cwidth = cwidth - 10;
+						}
+
+						if(cwidth > 900){
+							containerGrowing = false;
+						} 
+						if(cwidth < 700){
+							containerGrowing = true;
+						}
+						
+						box.setSize(cwidth, box.size.y);
+						UI.redraw();
+					}
+				}}, 3)
+
+			}
+
+		})
+		Container.addChildObject(ClickToAnimateBig)
 		Container.addChildObject(openModal)
 
+
+
 		mainbox.addChildObject(Container);
-
-
 		UI.addObject(mainbox);
-
 		UI.redraw();
 
 
