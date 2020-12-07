@@ -34,6 +34,8 @@ put `/example` into
   --  Add a object to the ui object, on the root level. (this in reality only needs to be done once)
   - **findObject(String identifier)**
   -- if you have given an object an identifier, you can find this object by using this function, it will return the object.
+  - **removeDisplayObject(INT ID)**
+  -- remove the display object from the UI instance, this is by integer ID only.
  
  # Display Objects
 
