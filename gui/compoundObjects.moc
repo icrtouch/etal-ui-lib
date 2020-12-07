@@ -8,6 +8,10 @@ class ButtonObject extends DisplayObject{
 	fontColor = 0xFFFFFF;
 	borderRadius = 0;
 	buttonState = 0;
+	color=0xf2f2f2;
+
+	onMouseDown = null;
+	onMouseUp = null;
 
 	function constructor(UI, options){
 		base.constructor(UI, options)
@@ -34,9 +38,30 @@ class ButtonObject extends DisplayObject{
 			this.text = "";
 		}
 
+		if("color" in options){
+			this.color = options.color;
+		} else {
+			this.color = 0xf2f2f2;
+		}
+
 		//if this has borderradius enabled, it will use this
 		if("borderRadius" in options){
 			this.borderRadius = options.borderRadius;
+		}
+
+		//this will be very useful for setting the buttons colour
+		if("onMouseDown" in options){
+			this.onMouseDown = options.onMouseDown;
+		} else {
+			this.onMouseDown = function(){
+			}
+		}
+		//this can also be used for anything else as it is generally a mouseup event
+		if("onMouseUp" in options){
+			this.onMouseUp = options.onMouseUp;
+		} else {
+			this.onMouseUp = function(){
+			}
 		}
 
 
@@ -80,12 +105,14 @@ class ButtonObject extends DisplayObject{
 
 	function mouseDown(){
 		this.buttonState = 1;
+		this.onMouseDown()
 		this.UI.redraw();
 	}
 
 	function mouseUp(){
 		if(this.buttonState == 1){
 			this.buttonState = 0;
+			this.onMouseUp();
 			this.UI.redraw();
 		}
 	}
@@ -102,7 +129,7 @@ class ButtonObject extends DisplayObject{
 				local bottomleftcolor = ICR_GetPixel(bottomleft.x,bottomleft.y);
 				local bottomrightcolor = ICR_GetPixel(bottomright.x,bottomright.y);
 				//DRAW MAIN BOX
-				ICR_DrawBox(this.relpos.x-sizeExpand, this.relpos.y-sizeExpand, this.size.x + (sizeExpand*2), this.size.y + (sizeExpand*2), this.options.color);
+				ICR_DrawBox(this.relpos.x-sizeExpand, this.relpos.y-sizeExpand, this.size.x + (sizeExpand*2), this.size.y + (sizeExpand*2), this.color);
 				//lets do this
 				
 				local resolution = 1;
@@ -117,7 +144,7 @@ class ButtonObject extends DisplayObject{
 
 				 local nY2 = floor(sin(90) * radius).tointeger();
         		 local nX2 = floor(cos(90) * radius).tointeger();
-				 ICR_DrawPie(topleft.x, topleft.y, radius*2, radius*2, topleft.x+ radius+nX1,   topleft.y+radius+nY1,    topleft.x+ radius+nX2  , topleft.y+radius+nY2,this.options.color, this.options.color);
+				 ICR_DrawPie(topleft.x, topleft.y, radius*2, radius*2, topleft.x+ radius+nX1,   topleft.y+radius+nY1,    topleft.x+ radius+nX2  , topleft.y+radius+nY2,this.color, this.color);
 
 
 
@@ -127,7 +154,7 @@ class ButtonObject extends DisplayObject{
 
 				 local nY2 = floor(sin(90) * radius).tointeger();
         		 local nX2 = floor(cos(90) * radius).tointeger();
-				 ICR_DrawPie(topright.x-radius*2, topright.y, radius*2, radius*2, topright.x+ radius+nX1,   topright.y+radius+nY1,    topright.x+ radius+nX2  , topright.y+radius+nY2,this.options.color, this.options.color);
+				 ICR_DrawPie(topright.x-radius*2, topright.y, radius*2, radius*2, topright.x+ radius+nX1,   topright.y+radius+nY1,    topright.x+ radius+nX2  , topright.y+radius+nY2,this.color, this.color);
 				
 
 				ICR_DrawBox(bottomleft.x-sizeExpand, bottomleft.y-radius+sizeExpand , radius, radius,bottomleftcolor);
@@ -136,7 +163,7 @@ class ButtonObject extends DisplayObject{
 
 				 local nY2 = floor(sin(90) * radius).tointeger();
         		 local nX2 = floor(cos(90) * radius).tointeger();
-				 ICR_DrawPie(bottomleft.x, bottomleft.y-radius*2, radius*2, radius*2, bottomleft.x+ radius+nX1,   bottomleft.y+radius+nY1,    bottomleft.x+ radius+nX2  , bottomleft.y+radius+nY2,this.options.color, this.options.color);
+				 ICR_DrawPie(bottomleft.x, bottomleft.y-radius*2, radius*2, radius*2, bottomleft.x+ radius+nX1,   bottomleft.y+radius+nY1,    bottomleft.x+ radius+nX2  , bottomleft.y+radius+nY2,this.color, this.color);
 
 
 
@@ -146,7 +173,7 @@ class ButtonObject extends DisplayObject{
 
 				 local nY2 = floor(sin(90) * radius).tointeger();
         		 local nX2 = floor(cos(90) * radius).tointeger();
-				 ICR_DrawPie(bottomright.x-radius*2, bottomright.y-radius*2, radius*2, radius*2, bottomright.x+ radius+nX1,   bottomright.y+radius+nY1,    bottomright.x+ radius+nX2  , bottomright.y+radius+nY2,this.options.color, this.options.color);
+				 ICR_DrawPie(bottomright.x-radius*2, bottomright.y-radius*2, radius*2, radius*2, bottomright.x+ radius+nX1,   bottomright.y+radius+nY1,    bottomright.x+ radius+nX2  , bottomright.y+radius+nY2,this.color, this.color);
 
 
 	}
@@ -170,9 +197,9 @@ class ButtonObject extends DisplayObject{
 				//DRAW MAIN BOX
 
 				if(this.buttonState == 0){
-					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
 				} else if(this.buttonState == 1) {
-					ICR_DrawBox(this.relpos.x-5, this.relpos.y-5 , this.size.x+10, this.size.y+10, this.options.color);
+					ICR_DrawBox(this.relpos.x-5, this.relpos.y-5 , this.size.x+10, this.size.y+10, this.color);
 				}
 
 			}
@@ -1170,6 +1197,14 @@ class CalendarObject extends DisplayObject{
 					size={x=0,y=0},
 					text=nCount,
 					color=boxColor,
+					onMouseDown=function(){
+						this.color=Color().gray
+						this.zDepth=3
+					},
+					onMouseUp=function(){
+						this.color=Color().lightgray
+						this.zDepth=2
+					},
 					onClick=function(){
 
 

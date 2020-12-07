@@ -168,7 +168,7 @@ function draw_all_objects(){
 			clickable=false,
 			position={x=0,y=0},
 			size={x=0,y=0},
-			color=0xfff2f2,
+			color=Color().white,
 			//borderRadius=20,
 		});
 		local mc = ConstraintController();
@@ -184,6 +184,8 @@ function draw_all_objects(){
 			size={x=100,y=35},
 			position={x=10,y=5},
 			borderRadius=5,
+		
+			
 			onClick=function(){
 				UI.deleteAllObjects();
 				UI.disableWindow();
@@ -228,15 +230,21 @@ function draw_all_objects(){
 		});
 		mainbox.addChildObject(BoxObjectSample);
 
-	
 
 		//Box OBJECT
 		local ButtonObjectSample = ButtonObject(UI,{
+			identifier="Button"
 			size={x=120,y=40},
 			color=Color().gray,
 			position={x=500,y=100},
 			text="Sample Button",
 			borderRadius=10,
+			onMouseDown=function(){
+				this.color = Color().lightgray;
+			},
+			onMouseUp=function(){
+				this.color = Color().gray;
+			},
 			onClick=function(){
 
 				local state = State.getInstance()
