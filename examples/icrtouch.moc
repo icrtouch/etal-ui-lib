@@ -446,7 +446,7 @@ function draw_all_objects(){
 				local Modal = ModalObject(UI, {
 					position={x=0,y=0},
 					size={x=0,y=0},
-					color=0xf2f2f2,
+					color=Color().white,
 					zDepth=10,
 					DoneCallback={
 						callback=function(){
@@ -461,11 +461,42 @@ function draw_all_objects(){
 				constrain.setY(CenterConstraint())
 				Modal.setConstraintController(constrain);
 
-				local modalContent = TextObject(UI,{
-					text="This is inside the modal",
-					fontColor=Color().black
-				});
-				Modal.addContent(modalContent);
+				local databutton = ButtonObject(UI, {
+					text="Delete",
+					fontColor=Color().black,
+					size={x=70,y=25},
+					zDepth=10,
+				})
+
+				local arrayofdata = [
+					["1", "Ashley", "Sheaff", "12"],
+					["2", "Martin", "Chev", "22"],
+					["3", "Colin", "Ringer", databutton],
+					["4", "Steve", "Glasby", "24"],
+					["5", "Steve", "Glasby", "24"],
+					["6", "Steve", "Glasby", "24"],
+					["7", "Steve", "Glasby", "24"],
+					["8", "Steve", "Glasby", "24"],
+					["9", "Steve", "Glasby", "24"],
+					["10", "Steve", "Glasby", "24"],
+					["11", "Steve", "Glasby", "24"],
+					["12", "Steve", "Glasby", "24"],
+					["13", "Steve", "Glasby", "24"]
+				]
+				local datatable = DataTableObject(UI, {
+					position={x=0,y=0},
+					zDepth=40,
+					size={x=400,y=300},
+					dataArray=arrayofdata,
+					colArray=["id", "firstname", "lastname", "age"],
+					rows=9
+				})
+				local dtcc = ConstraintController()
+				dtcc.setX(CenterConstraint())
+				dtcc.setY(CenterConstraint())
+				datatable.setConstraintController(dtcc);
+
+				Modal.addContent(datatable);
 
 				
 				mainbox.addChildObject(Modal)
@@ -512,7 +543,7 @@ function draw_all_objects(){
 
 
 		local textA = BoxObject(UI, {
-		size={x=100,y=90},
+		size={x=130,y=20},
 		position={x=0,y=0},
 		color=Color().black,
 		});
@@ -522,7 +553,7 @@ function draw_all_objects(){
 			position={x=0,y=0},
 		});
 		local textC = BoxObject(UI, {
-			size={x=100,y=20},
+			size={x=130,y=20},
 			color=Color().blue,
 			position={x=0,y=0},
 		});
@@ -550,12 +581,14 @@ function draw_all_objects(){
 			color=Color().white,
 			position={x=700,y=10},
 			objectList=list,
-			listPadding={x=10,y=10},
+			listPadding={x=10,y=5},
 			shrinkWrap=true
 		})
 
 
 		Container.addChildObject(myList)
+
+		
 
 
 
