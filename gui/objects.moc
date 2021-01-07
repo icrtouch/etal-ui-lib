@@ -263,7 +263,11 @@ class DisplayObject{
 	}
 
 
+	function _cloned(original){
 
+		this.constructor(original.UI, original.options);
+
+	}
 
 
 
