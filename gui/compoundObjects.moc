@@ -313,7 +313,95 @@ class TextInputObject extends DisplayObject{
 
 }
 
+class ListObject extends DisplayObject{
+
+	objectList=[] //list of display objects
+	listPadding={x=0,y=0}
+	shrinkWrap=false
+	color=0xFFFFFF
+
+	function constructor(ui, options){
+		base.constructor(ui, options);
+
+		if("objectList" in options){
+			this.objectList = options.objectList
+		} else  {
+			this.objectList = []
+		}
+
+		if("listPadding" in options){
+			this.listPadding = options.listPadding
+		} else {
+			this.listPadding = {x=0, y=0}
+		}
+
+		if("shrinkWrap" in options){
+			this.shrinkWrap = options.shrinkWrap
+		} else {
+			this.shrinkWrap = false
+		}
+
+
+
+		if("color" in options){
+		this.color = options.color;
+		} else {
+			this.color = 0xf2f2f2;
+		}
+
+		//we need to loop through the display objects and add them as children.
+		local totalHeight = 0 // we also need to accumulate all objects height + listPadding and set the list object height
+		local largestX = 0;
+
+		for(local i = 0; i < this.objectList.len();i++){
+
+			if(this.objectList[i].size.x > largestX){
+				largestX = this.objectList[i].size.x;
+			}
+
+			local objsize = this.objectList[i].size;
+			totalHeight = totalHeight + objsize.y;
+			totalHeight = totalHeight + listPadding.y;
+		}
+
+		//now we add them to the children
+		local totalheightCache = 0;
+		for(local i = 0; i < this.objectList.len();i++){
+			
+			this.objectList[i].setPosition(0 + listPadding.x, (totalheightCache) + listPadding.y*(i+1))
+			this.addChildObject(this.objectList[i]);
+
+			local objsize = this.objectList[i].size;
+			totalheightCache = totalheightCache + objsize.y
+			//totalheightCache = totalheightCache + listPadding.y
+		}
+
+		local width = this.size.x;
+		if(this.shrinkWrap == true){
+			width = largestX + (listPadding.x*2)
+		}
+
+
+		this.setSize(width, totalHeight + listPadding.y);
+		//now the are added we should really change the height of this object
+
+	}
+
+	function prepaint(){
+		base.prepaint()
+	}
+
+	function paint(){
+
+		ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
+
+	}
+
+}
+
 class PaginationObject extends DisplayObject{
+
+	color=null;
 
 	currentPage = 0;
 	firstPage = 0;
@@ -369,6 +457,11 @@ class PaginationObject extends DisplayObject{
 			}
 		}
 
+		if("color" in options){
+			this.color = options.color;
+		} else {
+			this.color = 0xf2f2f2;
+		}
 
 		//first we need to see how large this pagination is
 
