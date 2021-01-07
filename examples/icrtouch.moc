@@ -159,7 +159,6 @@ function OnEnterPGMMenu(nSub)
 function draw_all_objects(){
 
 
-
 		UI.enableWindow();
 		//UI.debug = true;
 
@@ -395,6 +394,7 @@ function draw_all_objects(){
 		innerBoxObjectSample.addChildObject(textInner)
 
 
+
 		local ClickToAnimate = ButtonObject(UI, {
 			text="Click To Animate",
 			color=Color().gray,
@@ -511,7 +511,57 @@ function draw_all_objects(){
 
 
 
+		local textA = BoxObject(UI, {
+		size={x=100,y=90},
+		position={x=0,y=0},
+		color=Color().black,
+		});
+		local textB = BoxObject(UI, {
+			size={x=130,y=60},
+			color=Color().gray,
+			position={x=0,y=0},
+		});
+		local textC = BoxObject(UI, {
+			size={x=100,y=20},
+			color=Color().blue,
+			position={x=0,y=0},
+		});
+
+		local textD = TextObject(UI, {
+			size={x=100,y=20},
+			fontColor=Color().blue,
+			position={x=0,y=0},
+			text="List Text Object"
+		});
+
+		local textE = ButtonObject(UI, {
+			size={x=100,y=20},
+			zDepth=10,
+			color=Color().lightgray,
+			fontColor=Color().black,
+			position={x=0,y=0},
+			text="List Button"
+		});
+
+		local list = [textA, textB, textC, textD, textE];
+		local myList = ListObject(UI, {
+			size={x=190,y=0},
+			zDepth=10,
+			color=Color().white,
+			position={x=700,y=10},
+			objectList=list,
+			listPadding={x=10,y=10},
+			shrinkWrap=true
+		})
+
+
+		Container.addChildObject(myList)
+
+
+
 		mainbox.addChildObject(Container);
+
+
 		UI.addObject(mainbox);
 		UI.redraw();
 
