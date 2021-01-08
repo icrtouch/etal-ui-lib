@@ -223,9 +223,16 @@ class TextInputObject extends DisplayObject{
 	fontSize=20;
 	fontColor = 0xFFFFFF;
 
+	color=0xf2f2f2;
 
 	function constructor(UI, options){
 		base.constructor(UI, options);
+
+		if("color" in options){
+			this.color = options.color;
+		} else {
+			this.color = 0xf2f2f2;
+		}
 
 		//if this has a font, it will use this
 		if("fontSize" in options){
@@ -265,6 +272,7 @@ class TextInputObject extends DisplayObject{
 				//position={x=10,y=10},
 				text=this.placeholder,
 				fontSize=this.fontSize,
+				fontColor=this.fontColor
 			});
 			
 			local CC = ConstraintController();
@@ -285,11 +293,16 @@ class TextInputObject extends DisplayObject{
 		this.clickable = true;
 		this.returnedText = "";
 
+		local self = this;
+
 		this.onClick = function(){
 			
-				this.returnedText = ICR_GetAlphaDialog("Search For Tickets", 500, true, "");
-				print(this.returnedText);
-				this.textObject.text = this.returnedText;
+				this.returnedText = ICR_GetAlphaDialog(this.placeholder, 500, true, "");
+				if(this.returnedText == "" || this.returnedText == null){
+					this.textObject.text = this.placeholder;
+				} else {
+					this.textObject.text = this.returnedText;
+				}			
 				UI.redraw();
 
 		}
@@ -304,7 +317,7 @@ class TextInputObject extends DisplayObject{
 	function paint(){
 
 
-		ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.options.color);
+		ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
 		ICR_DrawFrame(this.relpos.x, this.relpos.y , this.size.x, this.size.y, 2, this.options.borderColor);
 		
 
@@ -415,6 +428,7 @@ class ListObject extends DisplayObject{
 
 }
 
+
 class DataTableObject extends DisplayObject{
 
 	dataArray=[]
@@ -432,7 +446,6 @@ class DataTableObject extends DisplayObject{
 			this.dataArray = [];
 		}
 
-		
 		if("colArray" in options){
 			this.colArray = options.colArray;
 		} else {
@@ -452,12 +465,12 @@ class DataTableObject extends DisplayObject{
 		local tableSize = this.size;
 		
 		local ListContainer = BoxObject(ui, {	
-			color=Color().blue
+			color=Color().blue,
+			position={x=0,y=25}
 		})
 		local containercc = ConstraintController()
 		containercc.setWidth(PercentageConstraint(100))
 		containercc.setHeight(PercentageConstraint(90))
-		containercc.setY(PercentageConstraint(10))
 		ListContainer.setConstraintController(containercc)	
 		
 
@@ -483,12 +496,11 @@ class DataTableObject extends DisplayObject{
 		ListContainer.addChildObject(this.ListControl);
 
 		local header=BoxObject(this.UI, {
-			size={x=0,y=0},
-			color=0xf2f2f2
+			size={x=0,y=25},
+			color=0xe2e2e2
 		})
 		local headercc = ConstraintController()
 		headercc.setWidth(PercentageConstraint(100))
-		headercc.setHeight(PercentageConstraint(10))
 		header.setConstraintController(headercc)
 
 		if(this.colArray.len() > 0){
@@ -531,7 +543,7 @@ class DataTableObject extends DisplayObject{
 
 
 		local scrollbox = BoxObject(ui, {
-			color=0xf2f2f2,
+			color=0xe2e2e2,
 			size={x=40,y=0},
 			zDepth=30
 		})
@@ -1167,7 +1179,6 @@ class ModalObject extends DisplayObject{
 		this.addChildObject(this.ContentBox);
 
 
-
 		local donebox = BoxObject(UI, {
 			size={x=0,y=60},
 			position={x=0,y=0},
@@ -1176,7 +1187,8 @@ class ModalObject extends DisplayObject{
 		});
 		local doneboxConst = ConstraintController();
 		doneboxConst.setWidth(PercentageConstraint(100));
-		doneboxConst.setY(PercentageConstraint(100));
+		//doneboxConst.setHeight(PercentageConstraint(10));
+		doneboxConst.setY(PercentageConstraint(90));
 		donebox.setConstraintController(doneboxConst);
 
 
