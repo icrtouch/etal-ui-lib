@@ -784,7 +784,6 @@ class SelectOptionObject extends DisplayObject{
 			zDepth=1,
 			expand=false,
 			onClick=function(){
-				print("CLIKED")
 				self.createDropDown();
 				self.UI.redraw();
 			}
