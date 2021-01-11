@@ -9,6 +9,7 @@ class ButtonObject extends DisplayObject{
 	borderRadius = 0;
 	buttonState = 0;
 	color=0xf2f2f2;
+	expand=true;
 
 	onMouseDown = null;
 	onMouseUp = null;
@@ -42,6 +43,12 @@ class ButtonObject extends DisplayObject{
 			this.color = options.color;
 		} else {
 			this.color = 0xf2f2f2;
+		}
+		
+		if("expand" in options){
+			this.expand = options.expand;
+		} else {
+			this.expand = true;
 		}
 
 		//if this has borderradius enabled, it will use this
@@ -189,7 +196,12 @@ class ButtonObject extends DisplayObject{
 				if(this.buttonState == 0){
 					drawBoxWithRadius(0)
 				} else if(this.buttonState == 1) {
-					drawBoxWithRadius(2)
+					if(this.expand == true){
+						drawBoxWithRadius(2)
+					} else {
+						drawBoxWithRadius(0)
+					}
+					
 				}
 			
 			} else {
@@ -199,7 +211,11 @@ class ButtonObject extends DisplayObject{
 				if(this.buttonState == 0){
 					ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
 				} else if(this.buttonState == 1) {
-					ICR_DrawBox(this.relpos.x-5, this.relpos.y-5 , this.size.x+10, this.size.y+10, this.color);
+					if(this.expand == true){
+							ICR_DrawBox(this.relpos.x-5, this.relpos.y-5 , this.size.x+10, this.size.y+10, this.color);
+					} else {
+							ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);
+					}
 				}
 
 			}
@@ -435,6 +451,7 @@ class DataTableObject extends DisplayObject{
 	colArray=[]
 	ListControl=null
 	rows=10
+	rowPadding=4
 	scrollPos=0;
 
 	function constructor(ui, options){
@@ -457,6 +474,13 @@ class DataTableObject extends DisplayObject{
 		} else {
 			this.rows = 10;
 		}
+
+		if("rowPadding" in options){
+			this.rowPadding = options.rowPadding;
+		} else {
+			this.rowPadding = 4;
+		}
+
 
 
 		this.scrollPos = 0;
@@ -483,7 +507,7 @@ class DataTableObject extends DisplayObject{
 			color=Color().white,
 			position={x=0,y=0},
 			objectList=[],
-			listPadding={x=0,y=4},
+			listPadding={x=0,y=this.rowPadding},
 			shrinkWrap=false
 		})
 		local listcc = ConstraintController()
@@ -497,7 +521,8 @@ class DataTableObject extends DisplayObject{
 
 		local header=BoxObject(this.UI, {
 			size={x=0,y=25},
-			color=0xe2e2e2
+			color=0xe2e2e2,
+			zDepth=20
 		})
 		local headercc = ConstraintController()
 		headercc.setWidth(PercentageConstraint(100))
@@ -663,11 +688,15 @@ class DataTableObject extends DisplayObject{
 					local colcc = ConstraintController()
 					local xperc = (100/xSize)*(rowCount);
 					colcc.setX(PercentageConstraint(xperc));
+					colcc.setWidth(PercentageConstraint(100/xSize));
 					col.setConstraintController(colcc);
 
 					if(typeof element[rowCount] == "instance"){
 
-							col.addChildObject(clone element[rowCount]);
+
+							local clonedObj = clone element[rowCount];
+							col.addChildObject(clonedObj);
+
 
 					} else {
 
@@ -713,7 +742,143 @@ class DataTableObject extends DisplayObject{
 
 }
 
+class SelectOptionObject extends DisplayObject{
 
+	optionsArray = []
+	selectedCallback=null;
+	optionPlaceholder="";
+	dt=null;
+
+	function constructor(ui, options){
+		base.constructor(ui, options);
+
+		if("optionsArray" in options){
+			this.optionsArray = options.optionsArray;
+		} else {
+			this.optionsArray = [];
+		}
+
+		if("selectedCallback" in options){
+			this.selectedCallback = options.selectedCallback
+		} else {
+			this.selectedCallback = function(){
+				//nothing....
+				print("no callback");
+			}
+		}
+
+		
+		if("optionPlaceholder" in options){
+			this.optionPlaceholder = options.optionPlaceholder;
+		} else {
+			this.optionPlaceholder = "Please Select a option";
+		}
+
+
+		local self = this;
+		local selectOptionBox = ButtonObject(UI, {
+			color=0xf2f2f2,
+			fontColor=Color().black,
+			size={x=300,y=25},
+			text=this.optionPlaceholder,
+			zDepth=1,
+			expand=false,
+			onClick=function(){
+				print("CLIKED")
+				self.createDropDown();
+				self.UI.redraw();
+			}
+		})
+		local selectboxcc = ConstraintController()
+		selectboxcc.setWidth(PercentageConstraint(100))
+		selectOptionBox.setConstraintController(selectboxcc);
+
+		local downIcon = TextObject(UI, {
+			text="v",
+			size={x=25,y=25},
+			zDepth=2,
+			fontColor=Color().black
+		})
+		local downIconcc = ConstraintController()
+		downIconcc.setX(PercentageConstraint(95))
+		downIconcc.setY(CenterConstraint())
+		downIconcc.setWidth(PercentageConstraint(5))
+		downIcon.setConstraintController(downIconcc);
+
+		this.addChildObject(downIcon);
+
+		this.addChildObject(selectOptionBox);
+
+		//
+
+	}
+
+	function createDropDown(){
+
+		//we need to remake options array into array of buttons for the datatable object
+		local buttonArray = []
+		local self = this;
+		for (local nCount = 0 ; nCount < this.optionsArray.len(); nCount++) 
+		{
+			local currentCount = nCount
+			local button = ButtonObject(this.UI,{
+				position={x=0,y=0},
+				size={x=100,y=25},
+				text=this.optionsArray[nCount],
+				color=Color().lightgray,
+				zDepth=9,
+				onMouseDown=function(){
+				this.color = Color().gray;
+				this.zDepth=100
+				},
+				onMouseUp=function(){
+					this.color = Color().lightgray;
+					this.zDepth=10;
+				},
+				onClick=function(){
+					self.selectedCallback(this.options.text, currentCount);
+					//also close this dropdown
+					self.UI.removeDisplayObject(self.dt.ID);
+					self.UI.redraw();
+				}
+			})
+			local itemcc = ConstraintController()
+			itemcc.setWidth(PercentageConstraint(100))
+			button.setConstraintController(itemcc);
+			buttonArray.push([button]);
+
+		}
+		
+
+		this.dt = DataTableObject(this.UI, {
+			size={x=300,y=120},
+			dataArray=buttonArray,
+			rows=4,
+			rowPadding=3,
+			zDepth=3
+
+		})
+		local dtcc = ConstraintController()
+		dtcc.setWidth(PercentageConstraint(100))
+		dt.setConstraintController(dtcc);
+
+		this.addChildObject(this.dt);
+
+
+	}
+
+	function prepaint(){
+		base.prepaint()
+
+	}
+
+	function paint(){
+
+			//ICR_SelectImage(this.nImageID);
+			//ICR_DrawImage(this.relpos.x, this.relpos.y, this.size.x, this.size.y);
+
+	}
+}
 
 class PaginationObject extends DisplayObject{
 
