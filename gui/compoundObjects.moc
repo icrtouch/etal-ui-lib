@@ -4,6 +4,7 @@ dofile("etal\\lib\\dates.moc");
 class ButtonObject extends DisplayObject{
 	
 	text = null;
+	bindText=null;
 	fontSize=20;
 	fontColor = 0xFFFFFF;
 	borderRadius = 0;
@@ -37,6 +38,11 @@ class ButtonObject extends DisplayObject{
 			this.text = options.text;
 		} else {
 			this.text = "";
+		}
+		if("bindText" in options){
+			this.bindText = options.bindText;
+		} else {
+			this.bindText = null;
 		}
 
 		if("color" in options){
@@ -90,6 +96,7 @@ class ButtonObject extends DisplayObject{
 					clickable=false,
 					//position={x=10,y=10},
 					text=options.text,
+					bindText=this.bindText,
 					fontSize=this.fontSize,
 					fontColor=this.fontColor,
 				});
@@ -747,7 +754,9 @@ class SelectOptionObject extends DisplayObject{
 	optionsArray = []
 	selectedCallback=null;
 	optionPlaceholder="";
+	selectedValue=null;
 	dt=null;
+	selectOptionBox=null;
 
 	function constructor(ui, options){
 		base.constructor(ui, options);
@@ -758,6 +767,12 @@ class SelectOptionObject extends DisplayObject{
 			this.optionsArray = [];
 		}
 
+		if("selectedValue" in options){
+			this.selectedValue = options.selectedValue
+		} else {
+			this.selectedValue = "";
+		}
+
 		if("selectedCallback" in options){
 			this.selectedCallback = options.selectedCallback
 		} else {
@@ -766,7 +781,6 @@ class SelectOptionObject extends DisplayObject{
 				print("no callback");
 			}
 		}
-
 		
 		if("optionPlaceholder" in options){
 			this.optionPlaceholder = options.optionPlaceholder;
@@ -774,13 +788,20 @@ class SelectOptionObject extends DisplayObject{
 			this.optionPlaceholder = "Please Select a option";
 		}
 
-
 		local self = this;
-		local selectOptionBox = ButtonObject(UI, {
+		this.selectOptionBox = ButtonObject(UI, {
 			color=0xf2f2f2,
 			fontColor=Color().black,
 			size={x=300,y=25},
-			text=this.optionPlaceholder,
+			text="",
+			bindText=function(){
+				//this somehow works? i think as its an anon function "self" is a pointer
+				if("text" in self.selectedValue){
+					return self.selectedValue.text;
+				} else {
+					return self.optionPlaceholder
+				}
+			},
 			zDepth=1,
 			expand=false,
 			onClick=function(){
@@ -790,7 +811,7 @@ class SelectOptionObject extends DisplayObject{
 		})
 		local selectboxcc = ConstraintController()
 		selectboxcc.setWidth(PercentageConstraint(100))
-		selectOptionBox.setConstraintController(selectboxcc);
+		this.selectOptionBox.setConstraintController(selectboxcc);
 
 		local downIcon = TextObject(UI, {
 			text="v",
@@ -806,7 +827,7 @@ class SelectOptionObject extends DisplayObject{
 
 		this.addChildObject(downIcon);
 
-		this.addChildObject(selectOptionBox);
+		this.addChildObject(this.selectOptionBox);
 
 		//
 
@@ -823,7 +844,7 @@ class SelectOptionObject extends DisplayObject{
 			local button = ButtonObject(this.UI,{
 				position={x=0,y=0},
 				size={x=100,y=25},
-				text=this.optionsArray[nCount],
+				text=this.optionsArray[nCount].text,
 				color=Color().lightgray,
 				zDepth=9,
 				onMouseDown=function(){
@@ -835,7 +856,10 @@ class SelectOptionObject extends DisplayObject{
 					this.zDepth=10;
 				},
 				onClick=function(){
-					self.selectedCallback(this.options.text, currentCount);
+					self.selectedCallback(self.optionsArray[currentCount], currentCount);
+					self.selectedValue = self.optionsArray[currentCount];
+					self.selectOptionBox.text = self.selectedValue;
+
 					//also close this dropdown
 					self.UI.removeDisplayObject(self.dt.ID);
 					self.UI.redraw();

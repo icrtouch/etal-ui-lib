@@ -448,8 +448,8 @@ class TextObject extends DisplayObject{
 		local nMainFont = this.UI.createFont(this.fontName, this.fontSize)
 		local nCurFont = ICR_SelectFont(nMainFont);
 				
-		local nWidth = ICR_GetText_Width(options.text);
-		local nHeight = ICR_GetText_Height(options.text);
+		local nWidth = ICR_GetText_Width(this.text);
+		local nHeight = ICR_GetText_Height(this.text);
 		this.size = {x=nWidth,y=nHeight};
 	
 		//we want to do this before the main prepaint as we want to calculate text size
