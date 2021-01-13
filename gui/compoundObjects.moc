@@ -451,7 +451,6 @@ class ListObject extends DisplayObject{
 
 }
 
-
 class DataTableObject extends DisplayObject{
 
 	dataArray=[]
@@ -830,6 +829,13 @@ class SelectOptionObject extends DisplayObject{
 		this.addChildObject(this.selectOptionBox);
 
 		//
+
+	}
+
+
+	function setSelected(value){
+
+		this.selectedValue = value;
 
 	}
 
