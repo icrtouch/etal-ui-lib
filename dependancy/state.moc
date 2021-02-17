@@ -1,57 +1,80 @@
-class State {
+/**************************************************************
+state library for Etal
 
+this library allows for state management, freeing from global variables, so that with
+large projects you can access data through a singleton object.
+you can also define a callback so when state changes you can do something useful.
+for example, the price state changes, this then causes the UI to re-render
+without you having to call that code yourself.
+**************************************************************/
+
+class State 
+{
     static instance = {};
     states = {};
 	stateCallback = {};
 
-    function constructor(){
-      this.stateCallback = {};
-	  this.states = {};
+    function constructor()
+    {
+        this.stateCallback = {};
+        this.states = {};
     }
 
-    static function getInstance(){
-
-       if(instance.len() == 0){
-           instance.instance <- this;
-           return instance.instance;
-       } else {
-           return instance.instance;
-       }
-
+    /**
+    getInstance
+    get the static instance, if there isnt one, create one.
+    */
+    static function getInstance()    
+    {
+        if(instance.len() == 0)
+        {
+            instance.instance <- this;
+            return instance.instance;
+        } 
+        else 
+        {
+            return instance.instance;
+        }
     }
 
-	function getState(name, defaultValue){
-        if(name in this.states){
+    /**
+    getState
+    @param string - name - name/key of stored item
+    @param string - defaultValue - default value to return, if no stored value.
+    */
+	function getState(name, defaultValue)
+    {
+        if(name in this.states)
+        {
 		    return this.states[name];
-        } else {
+        } 
+        else 
+        {
             return defaultValue;
         }
 	}
 
-	function setState(name, value){
+    /**
+    setState 
+    @param string - name - name/key of stored item
+    @param string - value - value to store on the key
+     */
+	function setState(name, value)
+    {
 		this.states[name] <- value;
-		if("callback" in this.stateCallback){
+		if("callback" in this.stateCallback)
+        {
 			this.stateCallback.callback.callback();
 		}
 	}
 
-	function setStateCallback(callback){
+    /**
+    setStateCallback
+    @param table - callback - table with a callback key containing a function that you want to call on state change
+    runs a callback containing a function that you want to call on state change
+    */
+	function setStateCallback(callback)
+    {
 		this.stateCallback.callback <- callback;
 	}
-
-
 }
-/*
-local singletonobj = State.getInstance();
-singletonobj.setState("testing", "values");
-print(singletonobj.tostring());
-
-local singletonobj1 = State.getInstance();
-
-print(singletonobj1.tostring());
-
-local singletonobj2 = State.getInstance();
-
-print(singletonobj2.tostring());
-print(singletonobj2.getState("testing"));
- */

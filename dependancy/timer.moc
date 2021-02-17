@@ -1,91 +1,139 @@
-class TimerController {
+/**************************************************************
+timer library for Etal
 
+Allows for ease of use for timers, with callbacks and quick access 
+functions like setInterval and setTimeout.
+**************************************************************/
+
+class TimerController 
+{
     //timer array item consists of Timer Objects
     timers = [];
 
-    function constructor(){
+    function constructor()
+    {
         this.timers = [];
     }
 
-    function setInterval(callback, timeinms){
+    /**
+    setInterval
+    @param table - callback - callback is a table with a key called callback containing a function
+    @param int - timeinms - time in miliseconds 
+
+    This function will create a timer that will run forever until stopped
+    */
+    function setInterval(callback, timeinms)
+    {
         local createdTimer = Timer(this, callback, timeinms);
         this.timers.push(createdTimer);
         return createdTimer;
     }
 
-    function setTimeout(callback, timeinms){
+    /**
+    setTimeout
+    @param table - callback - callback is a table with a key called callback containing a function
+    @param int - timeinms - time in miliseconds 
 
+    This function will create a timer that only runs once, after the specified time in miliseconds
+    */
+    function setTimeout(callback, timeinms)
+    {
         local createdTimer = JustOnceTimer(this,callback, timeinms);
         this.timers.push(createdTimer);
         return createdTimer;
-
     }
 
-    function run_timers(nTimerid){
-        //print(nTimerid);
 
-        for(local i = 0; i < this.timers.len(); i++){
-
-            if(this.timers[i].id == nTimerid){
-                      this.timers[i].run();
-                      break;
+    /**
+    run_timers
+    @param int - nTimerid - id of timer being called
+    
+    this function will call the timer and its callback
+    */
+    function run_timers(nTimerid)
+    {
+        for(local i = 0; i < this.timers.len(); i++)
+        {
+            if(this.timers[i].id == nTimerid)
+            {
+                this.timers[i].run();
+                break;
             }
         }
-
     }
 
-    function removeTimer(timer){
-        for(local i = 0; i < this.timers.len(); i++){
-            if(this.timers[i].id == timer.id){
+    /**
+    removeTimer
+    @param Timer - timer - passes a timer object that should be removed
+    
+    Removes the timer from the list of stored timers.
+    */
+    function removeTimer(timer)
+    {
+        for(local i = 0; i < this.timers.len(); i++)
+        {
+            if(this.timers[i].id == timer.id)
+            {
                 this.timers[i] = null;
                 this.timers.remove(i);
             }
         }
     }
-
-
 }
 
-class Timer {
-
+class Timer 
+{
     id = 0;
     callback = null;
     timeinms = null;
     iteration = 0;
 
-    controller = null
+    controller = null;
 
-    function constructor(controller, callback, timeinms){
-
+    function constructor(controller, callback, timeinms)
+    {
         this.controller = controller;
         this.callback = callback;
         this.timeinms = timeinms;
         this.iteration = 0;
         this.id = ICR_StartTimer(this.timeinms);
-
     }
 
-    function run(){
+    /**
+    run
+    this will run the specific timers callback
+    */
+    function run()
+    {
         this.iteration = this.iteration + 1;
-        if("callback" in this.callback){
+        if("callback" in this.callback)
+        {
             this.callback.callback(this, this.iteration);
         }
     }
 
-    function killTimer(){
+    /**
+    killTimer
+    this function will stop and remove the timer
+    */
+    function killTimer()
+    {
         ICR_StopTimer(this.id);
         this.controller.removeTimer(this);
     }
-
-
 }
 
-class JustOnceTimer extends Timer{
-
-    function run(){
+class JustOnceTimer extends Timer
+{
+    /**
+    run
+    this class extends the timer object and so only overrides
+    the run function, it will call its callback, then immediately stop itself.
+    */
+    function run()
+    {
         this.iteration = this.iteration + 1;
         this.callback.callback(this, this.iteration);
         this.killTimer();
     }
-
 }
