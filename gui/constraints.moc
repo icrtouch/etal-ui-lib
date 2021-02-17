@@ -1,85 +1,143 @@
-class ConstraintController{
-
+class ConstraintController
+{
 	constraints = [];
 	
-	function constructor(){
+	function constructor()
+	{
 		this.constraints = [];
 	}
 
-	function setX(c){
+	/**
+	setX
+	@param Constaint - c - constraint object you want to set
+	set the x constraint
+	*/
+	function setX(c)
+	{
 		c.setAttribute("x");
 		constraints.push(c);
 	}
 
-	function setY(c){
+	/**
+	setY
+	@param Constaint - c - constraint object you want to set
+	set the Y constraint
+	*/
+	function setY(c)
+	{
 		c.setAttribute("y");
 		constraints.push(c);
 	}
 	
-	function setWidth(c){
+	/**
+	setWidth
+	@param Constaint - c - constraint object you want to set
+	set the Width constraint
+	*/
+	function setWidth(c)
+	{
 		c.setAttribute("width");
 		constraints.push(c);
 	}
 	
+	/**
+	setHeight
+	@param Constaint - c - constraint object you want to set
+	set the Height constraint
+	*/
 	function setHeight(c){
 		c.setAttribute("height");
 		constraints.push(c);
 	}	
 	
-	
-	function run_constraints(object){
-		if(this.constraints.len() > 0){
-			for(local i = 0; i < this.constraints.len(); i++){
+	/**
+	run_constraints
+	@param DisplayObject - object - Object you are applying the constraints to
+	Run the constraints on the displayObject
+	*/
+	function run_constraints(object)
+	{
+		if(this.constraints.len() > 0)
+		{
+			for(local i = 0; i < this.constraints.len(); i++)
+			{
 				//later on, be sure to run width/height constraints first
 				this.constraints[i].runConstraint(object);
 			}
 		}	
 	}
-
 }
 
+class Constraint 
+{
+	attribute = "";
 
-class Constraint {
-
-	attribute = ""
-
-	function setAttribute(a){
+	/**
+	setAttribute
+	@param String - a - string name of the attribute being set
+	*/
+	function setAttribute(a)
+	{
 		this.attribute = a;
 	}
 	
 	//override
-	function runConstraint(object){
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{
 	
 	}
-
 }
 
+class CenterConstraint extends Constraint 
+{	
 
-class CenterConstraint extends Constraint {
-	
-	function runConstraint(object){
-	
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{	
 		local Parent = object.getParent();
-		if(Parent){
-			if(this.attribute == "x"){
-				object.relpos = {x=((Parent.size.x / 2) - (object.size.x / 2))+Parent.relpos.x,y=object.relpos.y};
+
+		if(Parent)
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = ((Parent.size.x / 2) - (object.size.x / 2)) + Parent.relpos.x, 
+					y = object.relpos.y
+				};
 			}
-			if(this.attribute == "y"){
-				object.relpos = {y=((Parent.size.y / 2) - (object.size.y / 2))+Parent.relpos.y, x=object.relpos.x};
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = ((Parent.size.y / 2) - (object.size.y / 2)) + Parent.relpos.y, 
+					x = object.relpos.x
+				};
+			}			
+		} 
+		else 
+		{			
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = ((object.UI.tOurWinSize.WIDTH / 2) - (object.size.x / 2)), 
+					y = object.relpos.y
+				};
 			}
-			
-		} else {
-			
-			if(this.attribute == "x"){
-				object.relpos = {x=((object.UI.tOurWinSize.WIDTH/2) - (object.size.x / 2)), y=object.relpos.y};
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = ((object.UI.tOurWinSize.HEIGHT / 2) - (object.size.y / 2)), 
+					x = object.relpos.x
+				};
 			}
-			if(this.attribute == "y"){
-				object.relpos = {y=((object.UI.tOurWinSize.HEIGHT/2) - (object.size.y / 2)), x=object.relpos.x};
-			}
-		}
-	
-	}
-	
+		}	
+	}	
 }
 
 /*
@@ -87,73 +145,102 @@ class CenterConstraint extends Constraint {
 	and match it to anothers making any size options
 	relative to the linked object
 */
-class RelativeConstraint extends Constraint{
-	
-	function constructor(){
-	
+class RelativeConstraint extends Constraint
+{	
+	function constructor()
+	{	
 	
 	}
-
 }
 
 /*
 	Size Constraints need to run first, because 
 	otherwise position constraints which use size will be off
 */
-class PercentageConstraint extends Constraint {
-
+class PercentageConstraint extends Constraint 
+{
 	percentage = 0;
 
-	function constructor(value){
-
-		this.percentage = value;
-	
+	function constructor(value)
+	{
+		this.percentage = value;	
 	}
 	
-	function runConstraint(object){
-	
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{	
 		local Parent = object.getParent();
 	
-		if(Parent){
-
-			if(this.attribute == "x"){
-				object.relpos = {x=(floor(Parent.relpos.x + (Parent.size.x*(this.percentage / 100.0)))), y=object.relpos.y};
+		if(Parent)
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (floor(Parent.relpos.x + (Parent.size.x * (this.percentage / 100.0)))), 
+					y = object.relpos.y
+				};
 			}
 
-			if(this.attribute == "y"){
-				object.relpos = {y=(floor(Parent.relpos.y + (Parent.size.y*(this.percentage / 100.0)))), x=object.relpos.x};
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (floor(Parent.relpos.y + (Parent.size.y * (this.percentage / 100.0)))), 
+					x = object.relpos.x
+				};
 			}
 
-			if(this.attribute == "width"){
-				object.size = {y=object.size.y, x=(floor((Parent.size.x*(this.percentage / 100.0))))}
+			if(this.attribute == "width")
+			{
+				object.size = {
+					y = object.size.y, 
+					x = (floor((Parent.size.x * (this.percentage / 100.0))))
+				};
 				
 			}
-			if(this.attribute == "height"){
-				object.size = {x=object.size.x, y=(floor((Parent.size.y*(this.percentage / 100.0))))}
+			if(this.attribute == "height")
+			{
+				object.size = {
+					x = object.size.x, 
+					y = (floor((Parent.size.y * (this.percentage / 100.0))))
+				};
+			}			
+		} 
+		else 
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (0 + (floor(object.UI.tOurWinSize.WIDTH * (this.percentage / 100.0)))), 
+					y = object.relpos.y
+				};
+			}
+
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (0 + (floor(object.UI.tOurWinSize.HEIGHT * (this.percentage / 100.0)))), 
+					x = object.relpos.y
+				};
 			}
 			
-		} else {
-
-			if(this.attribute == "x"){
-				object.relpos = {x=(0 + (floor(object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0)))), y=object.relpos.y};
+			if(this.attribute == "width")
+			{
+				object.size = {
+					y = object.size.y, 
+					x = (floor((object.UI.tOurWinSize.WIDTH * (this.percentage / 100.0))))
+				};
 			}
 
-			if(this.attribute == "y"){
-				object.relpos = {y=(0 + (floor(object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0)))), x=object.relpos.y};
+			if(this.attribute == "height")
+			{
+				object.size = {
+					x = object.size.x, 
+					y = (floor((object.UI.tOurWinSize.HEIGHT * (this.percentage / 100.0))))
+				};
 			}
-
-			
-			if(this.attribute == "width"){
-				object.size = {y=object.size.y, x=(floor((object.UI.tOurWinSize.WIDTH*(this.percentage / 100.0))))}
-			}
-			if(this.attribute == "height"){
-				object.size = {x=object.size.x, y=(floor((object.UI.tOurWinSize.HEIGHT*(this.percentage / 100.0))))}
-			}
-
-
 		}
-	
-	
 	}
-	
 }
