@@ -11,10 +11,23 @@ dofile("etal\\lib\\dates.moc");
 
 dofile("etal\\lib\\timer.moc");
 dofile("etal\\lib\\gui\\gui.moc");
+dofile("etal\\lib\\state.moc");
 
 local UI = GUI();
 local TimerControl = TimerController()
 
+local stateManagement = State.getInstance()
+stateManagement.setStateCallback({
+	callback=function(){
+		UI.redraw();
+	}
+})
+
+
+local AnimationTimer = null;
+
+local growing = true;
+local containerGrowing = false;
 /**********************************************************************
 OnInit
 Called when the till starts
@@ -23,7 +36,7 @@ Called when the till starts
 function OnInit()
 {
     ICR_SetLocalUserData("bDebugPrinting", bDebugPrinting, true);
-    ICR_EnableDebugLog(bDebugPrinting);
+    //ICR_EnableDebugLog(bDebugPrinting);
     if(bDebugPrinting)
     {
         ICR_SetFeature("CONSOLE",bDebugPrinting);
@@ -41,6 +54,11 @@ function OnInit()
 
 }
 
+
+
+
+
+
 function OnWindowPaint(nID){ 
     UI.runPaintEvents(nID);
 }
@@ -48,7 +66,6 @@ function OnWindowPaint(nID){
 function OnMouseEvent(nWindowID, nEvent, nX, nY) {
 	UI.handleMouseEvents(nWindowID,nEvent,nX,nY);
 }
-
 /************************************************************************************
 * OnTimer(nTimerID, nSystemTime)
 * Called when the timer nTimerID from ICR_StartTimer() function has expired.
@@ -138,7 +155,6 @@ function OnEnterPGMMenu(nSub)
 
 
 
-
 function draw_all_objects(){
 
 
@@ -151,33 +167,55 @@ function draw_all_objects(){
 			clickable=false,
 			position={x=0,y=0},
 			size={x=0,y=0},
-			color=0xf2f2f2,
+			color=Color().white,
 			//borderRadius=20,
 		});
 		local mc = ConstraintController();
 		mc.setWidth(PercentageConstraint(100));
 		mc.setHeight(PercentageConstraint(100));
 		mc.setX(CenterConstraint())
-
 		mainbox.setConstraintController(mc);
+
+
+		local Container = BoxObject(UI, {
+			identifier="Container"
+			color=0xf2f2f2,
+			size={x=900,y=700}
+		})
+		local ccc = ConstraintController();
+		//ccc.setWidth(PercentageConstraint(90));
+		ccc.setHeight(PercentageConstraint(80));
+		ccc.setX(CenterConstraint());
+		ccc.setY(CenterConstraint());
+		Container.setConstraintController(ccc);
+
+
+
+
 
 		local closeBtn = ButtonObject(UI,{
 			text="Close",
-			color=Color().lightgray,
+			fontColor=Color().danger_font,
+			color=Color().danger_bg,
 			size={x=100,y=35},
-			position={x=0,y=5},
+			position={x=10,y=10},
+			borderRadius=5,
+		
+			
 			onClick=function(){
 				UI.deleteAllObjects();
 				UI.disableWindow();
 				UI.redraw();
 			}
 		})
+
 		mainbox.addChildObject(closeBtn);
 
 		local title = TextObject(UI,{
 			text="GUI Object Display",
 			fontSize=30,
 			fontColor=Color().lightgray,
+			fontName="Calibri",
 			position={x=400,y=10},
 	
 		});
@@ -186,60 +224,68 @@ function draw_all_objects(){
 		mainbox.addChildObject(closeBtn);
 
 
-
-
-		//TEXT OBJECT
-		
+		//TEXT OBJECT		
 		local textObjectSample = TextObject(UI,{
 			text="Sample Text Object ",
 			fontSize=27,
 			fontColor=Color().lightgray,
-			position={x=50,y=100},
+			position={x=10,y=10},
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Sample Text Object : " + count;
+			}
 		});
-		mainbox.addChildObject(textObjectSample);
+		Container.addChildObject(textObjectSample);
 
 		//Box OBJECT
 		local BoxObjectSample = BoxObject(UI,{
 			size={x=80,y=80},
 			color=Color().blue,
-			position={x=320,y=100},
+			position={x=10,y=50},
 		});
-		mainbox.addChildObject(BoxObjectSample);
-
-		//Box OBJECT radius
-		local BoxObjectSample = BoxObject(UI,{
-			size={x=40,y=40},
-			color=Color().blue,
-			position={x=410,y=100},
-			borderRadius=10
-		});
-		mainbox.addChildObject(BoxObjectSample);	
+		Container.addChildObject(BoxObjectSample);
 
 		//Box OBJECT
 		local ButtonObjectSample = ButtonObject(UI,{
+			identifier="Button"
 			size={x=120,y=40},
 			color=Color().gray,
-			position={x=500,y=100},
+			zDepth=10,
+			position={x=10,y=150},
 			text="Sample Button",
+			borderRadius=10,
+			onMouseDown=function(){
+				this.color = Color().lightgray;
+			},
+			onMouseUp=function(){
+				this.color = Color().gray;
+			},
 			onClick=function(){
 
+				local state = State.getInstance()
+				local stateCounter = state.getState("counter", 0);
+				stateCounter = stateCounter + 1;
+				state.setState("counter", stateCounter);
 				
 			},
 		});
-
-		mainbox.addChildObject(ButtonObjectSample);		
-
+		Container.addChildObject(ButtonObjectSample);		
 
 		//Banner OBJECT
 		local BoxObjectSample = BannerObject(UI,{
 			size={x=300,y=50},
 			color=Color().lightgray,
 			fontColor=Color().black,
-			position={x=700,y=100},
+			position={x=10,y=205},
 			text="Banner Text Sample",
-		
+			bindText=function(){
+				local s = State.getInstance();
+				local count = s.getState("counter", 0);
+				return "Banner Text Sample : " + count;
+			}
 		});
-		mainbox.addChildObject(BoxObjectSample);
+		Container.addChildObject(BoxObjectSample);
 
 		
 		//Box OBJECT radius
@@ -249,47 +295,51 @@ function draw_all_objects(){
 			size={x=230,y=30},
 			color=Color().lightgray,
 			fontColor=Color().black,
-			position={x=50,y=250},
+			position={x=10,y=270},
 			placeholder="Placeholder here",
 			borderColor=Color().gray
 		});
-		mainbox.addChildObject(TextInputSample);
+		Container.addChildObject(TextInputSample);
 
 
 		local progress = ProgressBarObject(UI,{
 			size={x=230,y=20},
-			position={x=340,y=220}
+			position={x=10,y=315}
 			color=Color().lightgray,
 			percent=90
 			percentColor=Color().green
 		});
-		mainbox.addChildObject(progress);
+		Container.addChildObject(progress);
 
 		local progress = ProgressBarObject(UI,{
 			size={x=230,y=20},
-			position={x=340,y=245}
+			position={x=10,y=340}
 			color=Color().lightgray,
 			percent=50,
-		
+			bindPercent=function(){
+				local s = State.getInstance();
+				return s.getState("counter", 0);
+			}
 		});
-		mainbox.addChildObject(progress);
+		Container.addChildObject(progress);
 
 
 		local progress = ProgressBarObject(UI,{
 			size={x=230,y=20},
-			position={x=340,y=270}
+			position={x=10,y=365}
 			color=Color().lightgray,
 			percentColor=Color().red,
 			percent=20
 		});
-		mainbox.addChildObject(progress);
+		Container.addChildObject(progress);
+
 
 
 		 local mainCalendar = CalendarObject(UI, {
                                         identifier="calendar",
                                         zDepth=1,
                                         clickable=false,
-                                        position={x=640,y=200},
+                                        position={x=380,y=10},
                                         size={x=0,y=0},
                                         onlyFilterClick=true,
                                         selectMultiple=false,
@@ -305,18 +355,246 @@ function draw_all_objects(){
 		local ccc = ConstraintController();
 		ccc.setWidth(PercentageConstraint(30));
 		ccc.setHeight(PercentageConstraint(40));
-	
 		mainCalendar.setConstraintController(ccc);
+		Container.addChildObject(mainCalendar)
 
-		mainbox.addChildObject(mainCalendar)
+		//Box OBJECT with a border radius, (curved corners)
+		local BoxObjectSample = BoxObject(UI,{
+			identifier="AnimationBox"
+			size={x=300,y=300},
+			color=Color().lightgray,
+			position={x=380,y=240},
+			borderRadius=20
+		});
+		Container.addChildObject(BoxObjectSample);	
+
+		//Add a smaller Blue box inside this box and center it
+		local innerBoxObjectSample = BoxObject(UI,{
+			size={x=100,y=100},
+			color=Color().blue,
+			position={x=20,y=350},
+			borderRadius=20
+		});
+		local cc = ConstraintController()
+		cc.setWidth(PercentageConstraint(50))
+		cc.setHeight(PercentageConstraint(50))
+		cc.setX(CenterConstraint());
+		cc.setY(CenterConstraint());
+		BoxObjectSample.addChildObject(innerBoxObjectSample)
+
+		//lets add some text to the center of that box
+		local textInner = TextObject(UI, {
+			text="Easy Centering",
+		})
+		local cct = ConstraintController()
+		cct.setX(CenterConstraint())
+		cct.setY(CenterConstraint())
+		textInner.setConstraintController(cct)
+		innerBoxObjectSample.addChildObject(textInner)
 
 
 
+		local ClickToAnimate = ButtonObject(UI, {
+			text="Click To Animate",
+			color=Color().gray,
+			size={x=200,y=40},
+			position={x=0,y=20},
+			zDepth=20
+			onClick=function(){
+				print("Clicked");
+				AnimationTimer = TimerControl.setInterval({callback=function(timer,i){
 
+					local box = UI.findObject("AnimationBox")
+						if(box != null){
+						local cwidth = box.size.x;
+						if(growing == true){
+							cwidth = cwidth + 20;
+						} else {
+							cwidth = cwidth - 20;
+						}
+
+						if(cwidth > 500){
+							growing = false;
+						} 
+						if(cwidth < 300){
+							growing = true;
+						}
+						
+						box.setSize(cwidth, box.size.y);
+						UI.redraw();
+					}
+				}}, 3)
+
+			}
+
+		})
+		local ccb = ConstraintController()
+		ccb.setX(CenterConstraint())
+		ClickToAnimate.setConstraintController(ccb);
+		BoxObjectSample.addChildObject(ClickToAnimate)
+		innerBoxObjectSample.setConstraintController(cc);
+
+
+		local openModal = ButtonObject(UI, {
+			text="Open Modal",
+			position={x=10,y=410},
+			size={x=120,y=40},
+			zDepth=20,
+			color=Color().gray,
+			onClick=function(){
+				local Modal = ModalObject(UI, {
+					position={x=0,y=0},
+					size={x=0,y=0},
+					color=Color().white,
+					zDepth=10,
+					DoneCallback={
+						callback=function(){
+								
+						}
+					}
+				})
+				local constrain = ConstraintController();
+				constrain.setWidth(PercentageConstraint(50));
+				constrain.setHeight(PercentageConstraint(50));
+				constrain.setX(CenterConstraint());
+				constrain.setY(CenterConstraint())
+				Modal.setConstraintController(constrain);
+
+				local databutton = ButtonObject(UI, {
+					text="Delete",
+					fontColor=Color().black,
+					size={x=70,y=25},
+					zDepth=10,
+				})
+
+				local arrayofdata = [
+					["1", "Ashley", "Sheaff", "12"],
+					["2", "Martin", "Chev", "22"],
+					["3", "Colin", "Ringer", databutton],
+					["4", "Steve", "Glasby", "24"],
+					["5", "Steve", "Glasby", "24"],
+					["6", "Steve", "Glasby", "24"],
+					["7", "Steve", "Glasby", "24"],
+					["8", "Steve", "Glasby", "24"],
+					["9", "Steve", "Glasby", "24"],
+					["10", "Steve", "Glasby", "24"],
+					["11", "Steve", "Glasby", "24"],
+					["12", "Steve", "Glasby", "24"],
+					["13", "Steve", "Glasby", "24"]
+				]
+				local datatable = DataTableObject(UI, {
+					position={x=0,y=0},
+					zDepth=40,
+					size={x=400,y=300},
+					dataArray=arrayofdata,
+					colArray=["id", "firstname", "lastname", "age"],
+					rows=9
+				})
+				local dtcc = ConstraintController()
+				dtcc.setX(CenterConstraint())
+				dtcc.setY(CenterConstraint())
+				datatable.setConstraintController(dtcc);
+
+				Modal.addContent(datatable);
+
+				
+				mainbox.addChildObject(Modal)
+			}
+		})
+
+		local ClickToAnimateBig = ButtonObject(UI, {
+			text="Click To Animate Whole Area",
+			color=Color().danger_btn_bg,
+			size={x=250,y=40},
+			position={x=10,y=480},
+			zDepth=20
+			onClick=function(){
+				print("Clicked");
+				AnimationTimer = TimerControl.setInterval({callback=function(timer,i){
+
+					local box = UI.findObject("Container")
+						if(box != null){
+						local cwidth = box.size.x;
+						if(containerGrowing == true){
+							cwidth = cwidth + 10;
+						} else {
+							cwidth = cwidth - 10;
+						}
+
+						if(cwidth > 900){
+							containerGrowing = false;
+						} 
+						if(cwidth < 700){
+							containerGrowing = true;
+						}
+						
+						box.setSize(cwidth, box.size.y);
+						UI.redraw();
+					}
+				}}, 3)
+
+			}
+
+		})
+		Container.addChildObject(ClickToAnimateBig)
+		Container.addChildObject(openModal)
+
+
+
+		local textA = BoxObject(UI, {
+		size={x=130,y=20},
+		position={x=0,y=0},
+		color=Color().black,
+		});
+		local textB = BoxObject(UI, {
+			size={x=130,y=60},
+			color=Color().gray,
+			position={x=0,y=0},
+		});
+		local textC = BoxObject(UI, {
+			size={x=130,y=20},
+			color=Color().blue,
+			position={x=0,y=0},
+		});
+
+		local textD = TextObject(UI, {
+			size={x=100,y=20},
+			fontColor=Color().blue,
+			position={x=0,y=0},
+			text="List Text Object"
+		});
+
+		local textE = ButtonObject(UI, {
+			size={x=100,y=20},
+			zDepth=10,
+			color=Color().lightgray,
+			fontColor=Color().black,
+			position={x=0,y=0},
+			text="List Button"
+		});
+
+		local list = [textA, textB, textC, textD, textE];
+		local myList = ListObject(UI, {
+			size={x=190,y=0},
+			zDepth=10,
+			color=Color().white,
+			position={x=700,y=10},
+			objectList=list,
+			listPadding={x=10,y=5},
+			shrinkWrap=true
+		})
+
+
+		Container.addChildObject(myList)
+
+		
+
+
+
+		mainbox.addChildObject(Container);
 
 
 		UI.addObject(mainbox);
-
 		UI.redraw();
 
 
