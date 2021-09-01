@@ -3,7 +3,6 @@
 
 // Global Variables
 local bDebugPrinting = true;    // debug logging, set this to false before letting it out
-
 // Load Libraries
 dofile("etal\\lib\\keys.moc"); 
 dofile("etal\\lib\\json.moc"); 
