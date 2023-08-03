@@ -1,0 +1,251 @@
+class ButtonObject extends BoxObject
+{
+
+	text = null;
+
+	bindText = null;
+	fontSize = 20;
+	fontColor = 0xFFFFFF;
+	color = 0xf2f2f2;
+
+	//click effects
+	expandAmount = 4;
+	expandColor = 0x000000;
+	
+	mouseDownColor = null;
+	mouseDownFontColor = 0xFFFFFF;
+
+	buttonState = 0;
+	onMouseDown = null;
+	onMouseUp = null;
+
+	preBorderWidth = 0;
+	preBorderColor = 0x000000;
+	preColor = 0x000000;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		//if this has a font, it will use this
+		if("fontSize" in options)
+		{
+			this.fontSize = options.fontSize;
+		} 
+		else 
+		{
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options)
+		{
+			this.fontColor = options.fontColor;
+		} 
+		else 
+		{
+			this.fontColor = 0xFFFFFF;
+		}
+
+		if("mouseDownFontColor" in options)
+		{
+			this.mouseDownFontColor = options.mouseDownFontColor;
+		}
+		else
+		{
+			this.mouseDownFontColor = this.fontColor;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options)
+		{
+			this.text = options.text;
+		} 
+		else 
+		{
+			this.text = "";
+		}
+
+		if("bindText" in options)
+		{
+			this.bindText = options.bindText;
+		} 
+		else 
+		{
+			this.bindText = null;
+		}
+
+		if("color" in options)
+		{
+			this.color = options.color;
+		} 
+		else 
+		{
+			this.color = 0xf2f2f2;
+		}
+		
+		if("expandColor" in options)
+		{
+			this.expandColor = options.expandColor;
+		} 
+		else 
+		{
+			this.expandColor = this.color;
+		}
+
+		//if this has borderradius enabled, it will use this
+		if("borderRadius" in options)
+		{
+			this.borderRadius = options.borderRadius;
+		}
+
+		//this will be very useful for setting the buttons colour
+		if("onMouseDown" in options)
+		{
+			this.onMouseDown = options.onMouseDown;
+		} 
+		else 
+		{
+			this.onMouseDown = function() {};
+		}
+		//this can also be used for anything else as it is generally a mouseup event
+		if("onMouseUp" in options)
+		{
+			this.onMouseUp = options.onMouseUp;
+		} 
+		else 
+		{
+			this.onMouseUp = function() {};
+		}
+
+		if("expandAmount" in options)
+		{
+			this.expandAmount = options.expandAmount;
+		} 
+		else
+		{
+			this.expandAmount = 4;
+		}
+
+		if("mouseDownColor" in options)
+		{
+			this.mouseDownColor = options.mouseDownColor;
+		} 
+		else
+		{
+			this.mouseDownColor = null;
+		}
+		
+		this.preBorderColor = this.borderColor;
+		this.preBorderWidth = this.borderWidth;
+		this.preColor = this.color;
+
+
+		this.buttonState = 0;
+		//If the button has text lets build it and add it as a child to the button
+		if("text" in options)
+		{		
+			//local nMainFont = ICR_CreateFont("Arial", this.fontSize);
+			local nMainFont = UI.createFont("Arial", this.fontSize);
+			local nCurFont = ICR_SelectFont(nMainFont);
+			
+			local nWidth = ICR_GetText_Width(options.text);
+			local nHeight = ICR_GetText_Height(options.text);
+
+			this.text = TextObject(UI, {
+				zDepth = 2,
+				size = {x = nWidth, y = nHeight},
+				clickable = false,
+				text = options.text,
+				bindText = this.bindText,
+				fontSize = this.fontSize,
+				fontColor = this.fontColor,
+			});
+			
+			local CC = ConstraintController();
+			CC.setX(CenterConstraint());
+			CC.setY(CenterConstraint());
+			this.text.setConstraintController(CC); //setConstraintController
+			
+			//add object to UI Control
+			this.addChildObject(this.text);			
+		}	
+
+	}
+
+	/**
+	mouseDown
+
+	when the mouseDown event is called this will set the button state and redraw the screen
+	*/
+	function mouseDown()
+	{
+		this.buttonState = 1;
+		if(this.expandAmount > 0)
+		{
+			this.borderWidth = this.expandAmount;
+			this.borderColor = this.expandColor;
+		}
+
+		if(this.expandAmount < 0)
+		{
+			this.margin = -this.expandAmount;
+		}
+		
+		if(this.mouseDownColor != null)
+		{
+			this.color = this.mouseDownColor;
+		}
+		
+		this.text.fontColor = this.mouseDownFontColor;
+
+		this.onMouseDown();
+		this.UI.redraw();
+
+	}
+
+	/**
+	mouseUp
+
+	when the mouseUp event is called this will set the button state and redraw the screen
+	*/
+	function mouseUp()
+	{
+		if(this.buttonState == 1)
+		{
+			this.buttonState = 0;
+
+			this.borderColor = this.preBorderColor;
+			this.borderWidth = this.preBorderWidth;
+			
+
+			this.margin = 0;
+
+
+			if(this.mouseDownColor != null)
+			{
+				this.color = this.preColor;
+			}
+
+			this.text.fontColor = this.fontColor;
+
+			this.onMouseUp();
+			this.UI.redraw();
+	
+		}
+	}
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{			
+		base.paint();
+	}
+
+	function prepaint()
+	{	
+		//if the button size ever changes, set it here.
+		base.prepaint();
+	}
+}

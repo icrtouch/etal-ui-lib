@@ -1,0 +1,338 @@
+class TabsObject extends DisplayObject
+{	
+
+	//we will need a callback for each tab that gets selected i think
+	//in case some need updating on selection?
+	
+	//tabs will have the following content
+	//TABLE
+	//		- name
+	//		- content display object
+
+	tabs = [];
+	selected_tab_index = 0;
+	tab_header_height = 30;
+
+	fontColor=0x000000;
+	fontSize=17;
+	fontName="Arial";
+	activeTabColor = 0xffffff;
+	tabBackgroundColor = 0xe1e1e1;
+	tabMouseDownColor = 0x007bff;
+	tabBorderRadius = 5;
+	tabBorderColor = 0xd1d1d1;
+	backgroundColor = 0xffffff;
+
+	containerBorderWidth = 1;
+	containerBorderColor = 0xd1d1d1;
+	containerBorderRadius = 5;
+
+	tabsChangedCallback = null;
+
+	mainBox = null;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		//set the selected tab, so we dont end up being static
+		this.selected_tab_index = 0;
+
+		//grab the tabs from the options
+		if("tabs" in options)
+		{
+			this.tabs = options.tabs;
+		} 
+		else 
+		{
+			this.tabs = [];
+		}
+
+		//set the tabsChanged callback, we might want to do something when it changes
+		if("tabsChangedCallback" in options)
+		{
+			this.tabsChangedCallback = options.tabsChangedCallback;
+		} 
+		else 
+		{
+			this.tabsChangedCallback = function(id){
+			}
+		}
+
+		if("tabBackgroundColor" in options)
+		{
+			this.tabBackgroundColor = options.tabBackgroundColor;
+		}
+		else
+		{
+			this.tabBackgroundColor = 0xe1e1e1;
+		}
+
+		if("tabMouseDownColor" in options)
+		{
+			this.tabMouseDownColor = options.tabMouseDownColor;
+		}
+		else
+		{
+			this.tabMouseDownColor = 0x007bff;
+		}
+
+		if("tabBorderRadius" in options)
+		{
+			this.tabBorderRadius = options.tabBorderRadius;
+		}
+		else
+		{
+			this.tabBorderRadius = 5;
+		}
+
+		if("containerBorderWidth" in options)
+		{
+			this.containerBorderWidth = options.containerBorderWidth;
+		}
+		else
+		{
+			this.containerBorderWidth = 1;
+		}
+
+		if("containerBorderColor" in options)
+		{
+			this.containerBorderColor = options.containerBorderColor;
+		}
+		else
+		{
+			this.containerBorderColor = 0xd1d1d1;
+		}
+
+		if("containerBorderRadius" in options)
+		{
+			this.containerBorderRadius = options.containerBorderRadius;
+		}
+		else
+		{
+			this.containerBorderRadius = 0;
+		}
+
+		if("backgroundColor" in options)
+		{
+			this.backgroundColor = options.backgroundColor;
+		} 
+		else
+		{
+			this.backgroundColor = 0xffffff;
+		}
+
+		if("tabBorderColor" in options)
+		{
+			this.tabBorderColor = options.tabBorderColor;
+		} 
+		else
+		{
+			this.tabBorderColor = 0xd1d1d1;
+		}
+
+		if("activeTabColor" in options)
+		{
+			this.activeTabColor = options.activeTabColor;
+		}
+		else
+		{
+			this.activeTabColor = 0xffffff;
+		}
+
+		if("fontColor" in options)
+		{
+			this.fontColor = options.fontColor;
+		}
+		else
+		{
+			this.fontColor = Color().black;
+		}
+
+		if("fontSize" in options)
+		{
+			this.fontSize = options.fontSize;
+		}
+		else
+		{
+			this.fontSize = 17;
+		}
+
+		if("fontName" in options)
+		{
+			this.fontName = options.fontName;
+		}
+		else
+		{
+			this.fontName = "Arial";
+		}
+
+
+		if(this.tabs.len() > 0)
+		{
+			//we have some tabs
+			//MAKE the main container box which we will switch content with.
+			this.mainBox = BoxObject(UI, {
+				identifer="tabbox",
+				position={x=0,y=this.tab_header_height+1},
+				size={x=10,y=(this.size.y - this.tab_header_height)}
+				color=this.backgroundColor,
+				borderColor=this.containerBorderColor,
+				borderWidth=this.containerBorderWidth,
+				borderRadius=this.containerBorderRadius,
+				zDepth=1
+			});
+			local mbcc = ConstraintController();
+			mbcc.setWidth(PercentageConstraint(100));
+			this.mainBox.setConstraintController(mbcc);
+			//add this as a child to the tabObject
+			this.addChildObject(this.mainBox);
+
+			//calculate widths of all tabs
+			for (local tabID = 0; tabID < this.tabs.len(); tabID++) 
+			{
+				     //text width
+				local nMainFont = UI.createFont(this.fontName, this.fontSize);
+				local nCurFont = ICR_SelectFont(nMainFont);
+                local nWidth = ICR_GetText_Width(this.tabs[tabID].name);
+                local tabBtnWidth = nWidth;
+
+				this.tabs[tabID].width <- tabBtnWidth + 15;
+			}
+			
+
+			//now make each tab
+			for (local tabID = 0; tabID < this.tabs.len(); tabID++) 
+			{
+				//tab background
+				local headerColor = this.tabBackgroundColor;
+				local borderWidth = 0;
+
+				if(tabID == this.selected_tab_index)
+				{
+					//if the current tabID is the selected tab, lets change the colors of that tab
+					headerColor = this.activeTabColor;
+					borderWidth = 1;
+				}
+				local self = this;
+                
+                local xPos = 0;
+                
+                if(tabID > 0){
+                    for (local nCount = tabID ; nCount > 0; nCount--) 
+                    {
+                        local nWidthinner = self.tabs[nCount - 1].width;
+                        xPos = (xPos + nWidthinner) + 8;
+						
+                    }
+                }
+				//add on borderradius
+				xPos = xPos + this.containerBorderRadius;
+		
+				local tabHeader = ButtonObject(UI,{
+					identifier="tab_"+tabID
+					size={x=self.tabs[tabID].width ,y=this.tab_header_height},
+					position = {x=xPos, y=0},
+					text=this.tabs[tabID].name,
+					fontColor=this.fontColor,
+					fontSize=this.fontSize,
+					color=headerColor,
+					borderColor=this.tabBorderColor,
+					borderWidth=borderWidth,
+                    expandAmount=0,
+                    mouseDownColor=this.tabMouseDownColor,
+					zDepth=2,
+					borderRadius=this.tabBorderRadius,
+					borderRadiusFlags=[1,1,0,0],
+					onClick=function(){
+						local split_arr = split(this.identifier, "_");
+						local id = split_arr[1];
+						self.selectTab(id.tointeger());
+					}
+				});
+				this.addChildObject(tabHeader)
+
+				local tabContentContainer = BoxObject(UI,{
+					identifier="tabcontent_"+tabID,
+					position={x=0,y=0},
+					size={x=0,y=0},
+					visible=false,
+					borderRadius=this.containerBorderRadius,
+				});
+				local tcc = ConstraintController();
+				tcc.setWidth(PercentageConstraint(100));
+				tcc.setHeight(PercentageConstraint(100));
+				tabContentContainer.setConstraintController(tcc);
+
+				tabContentContainer.addChildObject(this.tabs[tabID].content);
+				
+				this.mainBox.addChildObject(tabContentContainer);
+			}
+			UI.redraw();
+		}
+		
+		this.selectTab(0);
+	}
+
+	/**
+		selectTab
+		selects a tab by ID
+		@param id - the id of the tab to select
+	*/
+	function selectTab(id = 0)
+	{
+		//set the objects selected index id
+		this.selected_tab_index = id;
+
+		//call the callback with the ID
+		this.tabsChangedCallback(id);
+
+		//find the tabcontent object by id
+
+		for (local tabID = 0; tabID < this.tabs.len(); tabID++) 
+		{
+			//loop through each tab and show and hide the content
+			
+			local tabContentContainer = this.mainBox.findChildObject("tabcontent_"+tabID);
+			local tabHeader = this.findChildObject("tab_"+tabID);
+
+			//tab background
+			local headerColorBG = this.tabBackgroundColor;
+			local borderWidth = 0;
+
+			if(tabID == id)
+			{
+				//if the current tabID is the selected tab, lets change the colors of that tab
+				tabContentContainer.visible = true;
+				tabContentContainer.clickable = true;
+				headerColorBG = this.activeTabColor;
+				borderWidth = 1;	
+			} 
+			else
+			{
+				tabContentContainer.visible = false;
+				tabContentContainer.clickable = false;
+			}
+
+			tabHeader.color = headerColorBG;
+			tabHeader.borderWidth = borderWidth;
+			tabHeader.preColor = headerColorBG;
+			tabHeader.preBorderWidth = borderWidth;
+		}
+		
+		UI.redraw();
+	}
+
+	/**
+	prepaint (OVERRIDE)
+	this is the main prepaint function of the displayObject being overriden
+	*/
+	function prepaint()
+	{
+		base.prepaint();
+	}
+
+	function paint(){
+		   
+	}
+}

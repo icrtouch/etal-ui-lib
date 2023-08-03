@@ -1,0 +1,387 @@
+class PaginationObject extends DisplayObject
+{
+	color = null;
+
+	currentPage = 0;
+	firstPage = 0;
+	lastPage = 0;
+
+	showIndicator = true;
+	Indicators = [];
+	//if updateAsync false then the UI lib will move the indicaor on click itself. 
+	//If true this.setIndicatorColours() needs calling in external script
+	updateAsync = true; 
+
+	prevbtn = null;
+	nextbtn = null;
+	displayCount = null;
+
+	//Add extra button cusomisation here
+	buttonWidthPercent = 15;
+	buttonHeight=40;
+	buttonBorderRadius = 0;
+	buttonColorOverride = null;
+	buttonExpandAmount = 3;
+
+	buttonDisabledColor = null;
+
+	nextCallback = null;
+	prevCallback = null;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		
+
+		this.Indicators = [];
+
+		if("showIndicator" in options)
+		{
+			this.showIndicator = options.showIndicator;
+		} 
+		else
+		{
+			this.showIndicator = true;
+		}
+
+		if("updateAsync" in options)
+		{
+			this.updateAsync = options.updateAsync;
+		}
+
+		if("currentPage" in options)
+		{
+			this.currentPage = options.currentPage;
+		} 
+		else 
+		{
+			this.currentPage = 1;
+		}
+
+		if("lastPage" in options)
+		{
+			this.lastPage = options.lastPage;
+		} 
+		else 
+		{
+			this.lastPage = 1;
+		}
+
+		if("nextCallback" in options)
+		{
+			this.nextCallback = options.nextCallback;
+		} 
+		else 
+		{
+			this.nextCallback = function() {};
+		}
+
+		if("prevCallback" in options)
+		{
+			this.prevCallback = options.prevCallback;
+		} 
+		else 
+		{
+			this.prevCallback = function() {};
+		}
+
+		if("color" in options)
+		{
+			this.color = options.color;
+		} 
+		else 
+		{
+			this.color = 0xf2f2f2;
+		}
+
+		//if buttonWidthPercent
+		if("buttonWidthPercent" in options)
+		{
+			this.buttonWidthPercent = options.buttonWidthPercent;
+		} 
+		else 
+		{
+			this.buttonWidthPercent = 15;
+		}
+
+		//if button height
+		if("buttonHeight" in options)
+		{
+			this.buttonHeight = options.buttonHeight;
+		} 
+		else 
+		{
+			this.buttonHeight = 40;
+		}
+
+		//buttonBorderRadius
+		if("buttonBorderRadius" in options)
+		{
+			this.buttonBorderRadius = options.buttonBorderRadius;
+		} 
+		else 
+		{
+			this.buttonBorderRadius = 0;
+		}
+
+		//buttonColorOverride
+		if("buttonColorOverride" in options)
+		{
+			this.buttonColorOverride = options.buttonColorOverride;
+		} 
+		else 
+		{
+			this.buttonColorOverride = null;
+		}
+
+		//buttonExpandAmount
+		if("buttonExpandAmount" in options)
+		{
+			this.buttonExpandAmount = options.buttonExpandAmount;
+		} 
+		else 
+		{
+			this.buttonExpandAmount = 3;
+		}
+
+		//buttonDisabledColor
+		if("buttonDisabledColor" in options)
+		{
+			this.buttonDisabledColor = options.buttonDisabledColor;
+		} 
+		else 
+		{
+			this.buttonDisabledColor = null;
+		}
+
+		local self = this;
+
+		//first we need to see how large this pagination is
+		//make two buttons one for prev another for next
+		
+		this.prevbtn = ButtonObject(UI, {
+			identifier = "prevbtn",
+			zDepth = 10,
+			position = {x = 0, y = 0},
+			size = {x = 200, y = this.buttonHeight},
+			color = this.buttonColorOverride != null ? this.buttonColorOverride : Color().warning_btn_bg,
+			text = "Prev",
+			fontSize = 20,
+			fontColor = Color().white,
+			borderRadius=this.buttonBorderRadius,
+			onRedraw=function(){
+				if(self.currentPage > 1)
+				{	
+					local color = self.buttonColorOverride != null ? self.buttonColorOverride : Color().warning_btn_bg
+					this.color=color;
+				} 
+				else
+				{
+					this.color= self.buttonDisabledColor != null ? self.buttonDisabledColor : Color().gray;
+				}
+			},
+			onClick = function()
+			{
+				if(self.currentPage > 1)
+				{
+					self.currentPage = self.currentPage - 1;
+					if(!self.updateAsync)
+					{
+						if(self.showIndicator)
+						{
+							self.setIndicatorColours();
+						}
+					}
+					UI.redraw();
+					self.prevCallback();
+				}
+			},
+		});
+
+		local prevConst = ConstraintController();
+		prevConst.setWidth(PercentageConstraint(this.buttonWidthPercent));
+		prevConst.setX(PercentageConstraint(0));
+		prevConst.setY(CenterConstraint());
+		this.prevbtn.setConstraintController(prevConst);
+		this.addChildObject(this.prevbtn);
+
+		this.nextbtn = ButtonObject(UI, {
+			identifier = "nextbtn",
+			zDepth = 10,
+			position = {x = 0, y = 0},
+			size = {x = 200, y = this.buttonHeight},
+			color = this.buttonColorOverride != null ? this.buttonColorOverride : Color().success_btn_bg,
+			text = "Next",
+			fontSize = 20,
+			fontColor = Color().white,
+			borderRadius=this.buttonBorderRadius,
+		
+			onRedraw=function(){
+				//instead of directly changing the color of the button externally, we can do this in the onRedraw
+				if(self.currentPage < self.lastPage)
+				{	
+					local color = self.buttonColorOverride != null ? self.buttonColorOverride : Color().success_btn_bg;
+					this.color=color;
+				} 
+				else
+				{
+					this.color = self.buttonDisabledColor != null ? self.buttonDisabledColor : Color().gray;
+				}
+			},
+			onClick = function()
+			{
+				if(self.currentPage < self.lastPage)
+				{
+					self.currentPage = self.currentPage + 1;
+					if(!self.updateAsync)
+					{
+						self.setIndicatorColours();
+						UI.redraw();
+					}
+
+					self.nextCallback();
+				}				
+			},
+		});
+
+		local nextConst = ConstraintController();
+		nextConst.setWidth(PercentageConstraint(this.buttonWidthPercent));
+		nextConst.setX(PercentageConstraint(100-(this.buttonWidthPercent)));
+		nextConst.setY(CenterConstraint());
+		this.nextbtn.setConstraintController(nextConst);
+		this.addChildObject(this.nextbtn);	
+
+		if(this.showIndicator == true)
+		{
+			local indicatorContainer = BoxObject(UI, {
+				zDepth = 1,
+				position = {x = 0,y = 0},
+				size = {x = 20, y = 20},
+				color = this.color,
+			});
+
+			local Constraints = ConstraintController();
+			Constraints.setX(PercentageConstraint(18));
+			Constraints.setWidth(PercentageConstraint(64));
+			Constraints.setHeight(PercentageConstraint(100));
+			indicatorContainer.setConstraintController(Constraints);
+			this.addChildObject(indicatorContainer);			
+
+			//first calculate how large the indicators should be based off how many pages there are.
+			//take into account 18% buffer on each side
+			local allSegments = this.lastPage * 2;
+
+			local segmentSize = (100.0 / allSegments);
+
+			for(local i = 1;i <= this.lastPage; i++)
+			{				
+				//as this is in constructor, first item is green
+				local seg_color = 0xf2f2f2;
+				if(i == this.currentPage)
+				{
+					seg_color = Color().green;
+				}
+
+				local created_segment = BoxObject(UI, {
+					zDepth = 2,
+					position = {x = 0,y = 24},
+					size = {x = 20, y = 20},
+					color = seg_color,
+				});
+				local CC = ConstraintController();
+				local perc = ((segmentSize * 2) * i) - (segmentSize + (segmentSize / 2));
+		
+				CC.setX( PercentageConstraint(perc));
+				CC.setWidth(PercentageConstraint(segmentSize));
+				created_segment.setConstraintController(CC);
+
+				Indicators.push(created_segment);
+
+				indicatorContainer.addChildObject(created_segment);
+			}
+		
+		} 
+
+
+		this.displayCount = TextObject(UI, {
+				identifier = "counterText",
+				zDepth = 2,
+				position = {x = 0, y = 0},
+				size = {x = 20, y = 20},
+				color = Color().success_btn_bg,
+				text = (this.currentPage + " OF " + this.lastPage),
+				fontSize = 20,
+				fontColor = Color().black,
+				onRedraw=function(){
+					//instead of directly changing the text externally, we can do this in the onRedraw
+					local parent = this.getParent();
+					this.text = (parent.currentPage + " OF " + parent.lastPage);
+
+				}
+		});
+		local CounterConst = ConstraintController();
+		CounterConst.setX(CenterConstraint());
+		if(this.showIndicator == false)
+		{
+			CounterConst.setY(CenterConstraint());
+		}
+		this.displayCount.setConstraintController(CounterConst);
+		this.addChildObject(this.displayCount);
+
+
+	}
+
+	/**
+	setLastPage
+	@param int - lastPage - number of the last page available
+	*/
+	function setLastPage(lastPage)
+	{				
+		this.lastPage = lastPage;
+		this.setIndicatorColours();
+		this.UI.redraw();
+	}
+
+	/**
+	setCurrentPage
+	@param int - currentPage - number of the current page available
+	*/
+	function setCurrentPage(currentPage)
+	{
+		this.currentPage = currentPage;
+		this.setIndicatorColours();
+		this.UI.redraw();
+	}
+
+	/**
+	setIndicatorColours
+	this will set the colours of the indicators based on the current page location 
+	*/
+	function setIndicatorColours()
+	{
+		for(local i = 0; i < this.Indicators.len();i++)
+		{
+			if(i == this.currentPage-1)
+			{
+				//set it green
+				this.Indicators[i].color = Color().green;
+			} 
+			else 
+			{
+				//set it gray
+				this.Indicators[i].color = 0xf2f2f2;
+			}
+		}
+	}
+
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{
+		
+	}
+}

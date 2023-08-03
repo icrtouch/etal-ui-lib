@@ -1,0 +1,1265 @@
+
+class CalendarObject extends DisplayObject
+{
+	month = 0;
+	year = 0;
+	leftbtn = null;
+	rightbtn = null;
+	monthText = null;
+	DayContainer = null;
+
+	yearSelectorOpen = false;
+
+	onlyFilterClick = false;
+	selectMultiple = false;
+	selectedDates = [];
+	DateRangeFilters = [];
+
+	dateContextStrings = [];
+
+
+	mondayStart = false;
+	grayPast = true;
+
+	dateSelectedCallback=null;
+	failSelectedCallback=null;
+
+	showSelectedDates = false;
+	selectedDayColor = null;
+	selectedDayFontColor = null;
+
+	text = null;
+	fontSize=null;
+	fontColor = null;
+
+	primaryColor = null;
+
+	//active = today
+	activeBorderWidth = null;
+	activeBorderColor = null;
+	activeDayColor = null;
+	showTodayText = null;
+
+
+
+	dayColor = null;
+	dayFontSize = null;
+
+	daySizePerc = null;
+	headerHeightPerc = null;
+	headerColor = null;
+	headerFontSize = null;
+	headerFullDayName = null;
+	dayBorderWidth = null;
+	dayBorderColor = null;
+	dayBorderRadius = null;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		this.dateContextStrings = [];
+
+		//if this has a font, it will use this
+		if("fontSize" in options)
+		{
+			this.fontSize = options.fontSize;
+		} 
+		else 
+		{
+			this.fontSize = 20;
+		}
+
+		if("dayFontSize" in options)
+		{
+			this.dayFontSize = options.dayFontSize;
+		} 
+		else 
+		{
+			this.dayFontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options)
+		{
+			this.fontColor = options.fontColor;
+		} 
+		else 
+		{
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options)
+		{
+			this.text = options.text;
+		} 
+		else 
+		{
+			this.text = "";
+		}
+
+		if("month" in options)
+		{
+			this.month = options.month;
+		} 
+		else 
+		{
+			this.month = date().month;
+		}
+
+		if("year" in options)
+		{
+			this.year = options.year;
+		}
+		else 
+		{
+			this.year = date().year;
+		}
+
+		if("onlyFilterClick" in options)
+		{
+			this.onlyFilterClick = options.onlyFilterClick;
+		} 
+		else 
+		{
+			this.onlyFilterClick = false;
+		}
+
+		if("selectMultiple" in options)
+		{
+			this.selectMultiple = options.selectMultiple;
+		} 
+		else 
+		{
+			this.selectMultiple = false;
+		}
+
+		if("dateSelectedCallback" in options)
+		{
+			this.dateSelectedCallback = options.dateSelectedCallback;
+		} 
+		else 
+		{
+			this.dateSelectedCallback = function() {};
+		}
+
+		if("failSelectedCallback" in options)
+		{
+			this.failSelectedCallback = options.failSelectedCallback;
+		} 
+		else 
+		{
+			this.failSelectedCallback = function() {}
+		}
+
+		if("showSelectedDates" in options)
+		{
+			this.showSelectedDates = options.showSelectedDates;
+		} 
+		else 
+		{
+			this.showSelectedDates = false;
+		}
+
+		if("selectedDayColor" in options)
+		{
+			this.selectedDayColor = options.selectedDayColor;
+		} 
+		else 
+		{
+			this.selectedDayColor = 0x000000;
+		}
+
+		if("selectedDayFontColor" in options)
+		{
+			this.selectedDayFontColor = options.selectedDayFontColor;
+		} 
+		else 
+		{
+			this.selectedDayFontColor = 0xFFFFFF;
+		}
+
+		if("daySizePerc" in options)
+		{
+			this.daySizePerc = options.daySizePerc;
+		} 
+		else
+		{
+			this.daySizePerc = 100;
+		}
+
+		if("headerHeightPerc" in options)
+		{
+			this.headerHeightPerc = options.headerHeightPerc;
+		}
+		else
+		{
+			this.headerHeightPerc = 10;
+		}
+
+		if("headerFontSize" in options)
+		{
+			this.headerFontSize = options.headerFontSize;
+		}
+		else
+		{
+			this.headerFontSize = 20;
+		}
+
+		if("headerFullDayName" in options)
+		{
+			this.headerFullDayName = options.headerFullDayName;
+		}
+		else
+		{
+			this.headerFullDayName = false;
+		}
+
+		if("primaryColor" in options)
+		{
+			this.primaryColor = options.primaryColor;
+		}
+		else
+		{
+			this.primaryColor = 0x007bff;
+		}
+
+		if("headerColor" in options)
+		{
+			this.headerColor = options.headerColor;
+		}
+		else
+		{
+			this.headerColor = 0x808080;
+		}
+
+		if("mondayStart" in options)
+		{
+			this.mondayStart = options.mondayStart;
+		}
+		else
+		{
+			this.mondayStart = false;
+		}
+
+		if("dayBorderRadius" in options)
+		{
+			this.dayBorderRadius = options.dayBorderRadius;
+		}
+		else
+		{
+			this.dayBorderRadius = 0;
+		}
+
+		if("dayBorderWidth" in options)
+		{
+			this.dayBorderWidth = options.dayBorderWidth;
+		}
+		else
+		{
+			this.dayBorderWidth = 0;
+		}
+
+		if("dayBorderColor" in options)
+		{
+			this.dayBorderColor = options.dayBorderColor;
+		}
+		else
+		{
+			this.dayBorderColor = 0xCCCCCC;
+		}
+
+		if("activeDayColor" in options)
+		{
+			this.activeDayColor = options.activeDayColor;
+		}
+		else
+		{
+			this.activeDayColor = 0xFF0000;
+		}
+
+		if("showTodayText" in options)
+		{
+			this.showTodayText = options.showTodayText;
+		}
+		else
+		{
+			this.showTodayText = false;
+		}
+
+		if("activeBorderColor" in options)
+		{
+			this.activeBorderColor = options.activeBorderColor;
+		}
+		else
+		{
+			this.activeBorderColor = 0xFF0000;
+		}
+
+		if("activeBorderWidth" in options)
+		{
+			this.activeBorderWidth = options.activeBorderWidth;
+		}
+		else
+		{
+			this.activeBorderWidth = 0;
+		}
+
+		if("dayColor" in options)
+		{
+			this.dayColor = options.dayColor;
+		}
+		else
+		{
+			this.dayColor = 0xCCCCCC;
+		}
+
+		if("grayPast" in options)
+		{
+			this.grayPast = options.grayPast;
+		}
+		else
+		{
+			this.grayPast = true;
+		}
+		
+		this.DateRangeFilters = [];
+
+		//the below code inside the constructor, constructs the bare bones of the calendar, like the title, left & right buttons
+
+		local self = this;
+		//left button
+		this.leftbtn = ButtonObject(this.UI, {
+			identifier = "leftbtn",
+			zDepth = 2,
+			clickable = true,
+			position = {x = 0, y = 0},
+			size = {x = 0, y = 0},
+			text = "<",
+			color = Color().white,
+			borderWidth=1,
+			borderColor=Color().gray,
+			fontColor=Color().black,
+			mouseDownFontColor=Color().white,
+			mouseDownColor=self.primaryColor,
+			//expandColor=Color().primary_bg,
+			borderRadius=4,
+
+			onClick = function()
+			{				
+				if(self.month == 1)
+				{
+					self.month = 12;
+					self.year = self.year - 1;
+				} 
+				else 
+				{
+					self.month = self.month - 1;
+				}
+				self.yearSelectorOpen = false;
+
+				self.removeYearSelector();
+
+				self.updateMonthText();
+				self.GenerateMonth();
+				self.UI.redraw();
+			}
+		});
+
+		local cc = ConstraintController();
+		cc.setWidth(PercentageConstraint(10));
+		cc.setHeight(PercentageConstraint(8));
+		this.leftbtn.setConstraintController(cc);
+
+		this.addChildObject(this.leftbtn);
+
+		//right button
+		this.rightbtn = ButtonObject(this.UI, {
+			identifier = "rightbtn",
+			zDepth = 2,
+			clickable = true,
+			position = {x = 0, y = 0},
+			size = {x = 0,y = 0},
+			text = ">",
+			color = Color().white,
+			borderWidth=1,
+			borderColor=Color().gray,
+			fontColor=Color().black,
+			mouseDownFontColor=Color().white,
+			mouseDownColor=self.primaryColor,
+			//expandColor=Color().primary_bg,
+			borderRadius=4,
+			onClick = function()
+			{						
+				if(self.month == 12)
+				{
+					self.month = 1;
+					self.year = self.year + 1;
+				} 
+				else 
+				{
+					self.month = self.month + 1;
+				}
+
+				self.yearSelectorOpen = false;
+
+				self.removeYearSelector();
+
+				self.updateMonthText();
+				self.GenerateMonth();
+				self.UI.redraw();
+			}
+		});
+
+		local cc = ConstraintController();
+		cc.setWidth(PercentageConstraint(10));
+		cc.setHeight(PercentageConstraint(8))
+		cc.setX(PercentageConstraint(90));
+		this.rightbtn.setConstraintController(cc);
+
+		this.addChildObject(this.rightbtn);
+
+		//local nMainFont = ICR_CreateFont("Arial", this.fontSize);
+		local nMainFont = UI.createFont("Arial", this.fontSize);
+		local nCurFont = ICR_SelectFont(nMainFont);
+		local nWidth = ICR_GetText_Width(this.month+" / "+this.year);
+		local nHeight = ICR_GetText_Height(this.month+" / "+this.year);
+
+		this.monthText = ButtonObject(this.UI, {
+			text = this.month + " / " + this.year,
+			size = {x = nWidth + 40, y = nHeight+20},
+			position = {x = 0, y = 0},
+			fontColor = Color().black,
+			fontSize = 22,
+			borderRadius=5,
+			onClick=function() 
+			{
+				self.yearSelectorOpen = !self.yearSelectorOpen;
+
+				//show year selector
+				if(self.yearSelectorOpen == true)
+				{
+					local yearSelector = BoxObject(UI, {
+						identifier="calendar_year_selector",
+						size={x=0,y=0},
+						position={x=0,y=50},
+						color=Color().white,
+						borderRadius=5,
+						borderColor=Color().gray,
+						borderWidth=2,
+						zDepth=99
+					})
+					local ycc = ConstraintController();
+					ycc.setWidth(PercentageConstraint(50))
+					ycc.setHeight(PercentageConstraint(24))
+					ycc.setX(CenterConstraint());
+					yearSelector.setConstraintController(ycc);
+
+
+
+					local leftbtn_minus_one = ButtonObject(this.UI, {
+						identifier = "leftbtn_minus_one",
+						zDepth = 2,
+						clickable = true,
+						position = {x = 0, y = 20},
+						size = {x = 0, y = 0},
+						text = "-1",
+						color = Color().white,
+						borderWidth=1,
+						borderColor=Color().gray,
+						fontColor=Color().black,
+						mouseDownFontColor=Color().white,
+						mouseDownColor=self.primaryColor,
+						// expandColor=Color().primary_bg,
+						borderRadius=4,
+
+						onClick = function()
+						{				
+							self.year = self.year - 1;
+							self.updateMonthText();
+							self.GenerateMonth();
+						}
+					});
+
+					local cc = ConstraintController();
+					cc.setWidth(PercentageConstraint(20));
+					cc.setHeight(PercentageConstraint(35));
+					cc.setX(PercentageConstraint(25));
+					cc.setY(PercentageConstraint(55));
+					leftbtn_minus_one.setConstraintController(cc);
+					yearSelector.addChildObject(leftbtn_minus_one);
+					//right button
+					local rightbtn_plus_one = ButtonObject(this.UI, {
+						identifier = "rightbtn_plus_one",
+						zDepth = 2,
+						clickable = true,
+						position = {x = 0, y = 20},
+						size = {x = 0,y = 0},
+						text = "+1",
+						color = Color().white,
+						borderWidth=1,
+						borderColor=Color().gray,
+						fontColor=Color().black,
+						mouseDownFontColor=Color().white,
+						mouseDownColor=self.primaryColor,
+						//expandColor=Color().primary_bg,
+						borderRadius=4,
+						onClick = function()
+						{						
+							self.year = self.year + 1;
+							self.updateMonthText();
+							self.GenerateMonth();
+						}
+					});
+					local cc = ConstraintController();
+					cc.setWidth(PercentageConstraint(20));
+					cc.setHeight(PercentageConstraint(35))
+					cc.setX(PercentageConstraint(55));
+					cc.setY(PercentageConstraint(55));
+					rightbtn_plus_one.setConstraintController(cc);
+					yearSelector.addChildObject(rightbtn_plus_one);
+
+
+
+
+
+					//PLUS 10
+
+					local leftbtn_minus_ten = ButtonObject(this.UI, {
+						identifier = "leftbtn_minus_ten",
+						zDepth = 2,
+						clickable = true,
+						position = {x = 0, y = 65},
+						size = {x = 0, y = 0},
+						text = "-10",
+						color = Color().white,
+						borderWidth=1,
+						borderColor=Color().gray,
+						fontColor=Color().black,
+						mouseDownFontColor=Color().white,
+						mouseDownColor=self.primaryColor,
+						//expandColor=Color().primary_bg,
+						borderRadius=4,
+
+						onClick = function()
+						{				
+							self.year = self.year - 10;
+							self.updateMonthText();
+							self.GenerateMonth();
+						}
+					});
+
+					local cc = ConstraintController();
+					cc.setWidth(PercentageConstraint(15));
+					cc.setHeight(PercentageConstraint(35));
+					cc.setX(PercentageConstraint(5));
+					cc.setY(PercentageConstraint(55));
+					leftbtn_minus_ten.setConstraintController(cc);
+					yearSelector.addChildObject(leftbtn_minus_ten);
+					//right button
+					local rightbtn_plus_ten = ButtonObject(this.UI, {
+						identifier = "rightbtn_plus_ten",
+						zDepth = 2,
+						clickable = true,
+						position = {x = 0, y = 65},
+						size = {x = 0,y = 0},
+						text = "+10",
+						color = Color().white,
+						borderWidth=1,
+						borderColor=Color().gray,
+						fontColor=Color().black,
+						mouseDownFontColor=Color().white,
+						mouseDownColor=self.primaryColor,
+						//expandColor=Color().primary_bg,
+						borderRadius=4,
+						onClick = function()
+						{						
+							self.year = self.year + 10;
+							self.updateMonthText();
+							self.GenerateMonth();
+						}
+					});
+					local cc = ConstraintController();
+					cc.setWidth(PercentageConstraint(15));
+					cc.setHeight(PercentageConstraint(35));
+					cc.setX(PercentageConstraint(80));
+					cc.setY(PercentageConstraint(55));
+					rightbtn_plus_ten.setConstraintController(cc);
+					yearSelector.addChildObject(rightbtn_plus_ten);
+
+
+					local yearValue = BannerObject(UI, {
+						position={x=0,y=0},
+						size={x=100,y=30},
+						text=self.year,
+						onRedraw=function(){
+							this.text.text = self.year;
+						},
+						fontSize=30,
+						fontColor=Color().black
+					})
+					local cc = ConstraintController();
+					cc.setWidth(PercentageConstraint(40));
+					cc.setX(CenterConstraint());
+					cc.setY(PercentageConstraint(15));
+					yearValue.setConstraintController(cc);
+
+					yearSelector.addChildObject(yearValue);
+
+					self.addChildObject(yearSelector);
+					UI.redraw();
+				}
+				else
+				{
+					self.removeYearSelector();
+					//hide year selector
+				}
+
+			}
+
+		});
+
+		this.updateMonthText();
+		local mtcc = ConstraintController();
+		mtcc.setHeight(PercentageConstraint(8));
+		mtcc.setX(CenterConstraint());
+		this.monthText.setConstraintController(mtcc);
+		this.addChildObject(this.monthText);		
+
+		//right button
+
+		this.DayContainer = BoxObject(this.UI,{
+			identifier = "mainbox",
+			zDepth = 1,
+			clickable = false,
+			position = {x = 0, y = 0},
+			size = {x = 0, y = 0},
+			color = Color().white,
+		});
+		local dcc = ConstraintController();
+		dcc.setWidth(PercentageConstraint(100));
+		dcc.setHeight(PercentageConstraint(85 - this.headerHeightPerc));
+		dcc.setY(PercentageConstraint(this.headerHeightPerc + 11));
+		this.DayContainer.setConstraintController(dcc);	
+
+		// language codes
+		// 215=9=SUNDAY
+		// 216=9=MONDAY
+		// 217=9=TUESDAY
+		// 218=9=WEDNESDAY
+		// 219=9=THURSDAY
+		// 220=9=FRIDAY
+		// 221=9=SATURDAY	
+
+		local sunday = ICR_GetLanguageText(215);
+		local monday = ICR_GetLanguageText(216);
+		local tuesday = ICR_GetLanguageText(217);
+		local wednesday = ICR_GetLanguageText(218);
+		local thursday = ICR_GetLanguageText(219);
+		local friday = ICR_GetLanguageText(220);
+		local saturday = ICR_GetLanguageText(221);
+
+		if(headerFullDayName == false)
+		{
+			//get the first two chars of each day
+			sunday = sunday.slice(0,2);
+			monday = monday.slice(0,2);
+			tuesday = tuesday.slice(0,2);
+			wednesday = wednesday.slice(0,2);
+			thursday = thursday.slice(0,2);
+			friday = friday.slice(0,2);
+			saturday = saturday.slice(0,2);
+
+			//lowercase second char of each day
+			sunday = sunday.slice(0,1) + sunday.slice(1,2).tolower();
+			monday = monday.slice(0,1) + monday.slice(1,2).tolower();
+			tuesday = tuesday.slice(0,1) + tuesday.slice(1,2).tolower();
+			wednesday = wednesday.slice(0,1) + wednesday.slice(1,2).tolower();
+			thursday = thursday.slice(0,1) + thursday.slice(1,2).tolower();
+			friday = friday.slice(0,1) + friday.slice(1,2).tolower();
+			saturday = saturday.slice(0,1) + saturday.slice(1,2).tolower();
+		}
+		else
+		{
+			sunday = sunday.slice(0,1) + sunday.slice(1,sunday.len()).tolower();
+			monday = monday.slice(0,1) + monday.slice(1,monday.len()).tolower();
+			tuesday = tuesday.slice(0,1) + tuesday.slice(1,tuesday.len()).tolower();
+			wednesday = wednesday.slice(0,1) + wednesday.slice(1,wednesday.len()).tolower();
+			thursday = thursday.slice(0,1) + thursday.slice(1,thursday.len()).tolower();
+			friday = friday.slice(0,1) + friday.slice(1,friday.len()).tolower();
+			saturday = saturday.slice(0,1) + saturday.slice(1,saturday.len()).tolower();
+		}
+		
+
+
+		//Grid will be 7w x 5h
+		local daysOfWeek = [sunday,monday,tuesday,wednesday,thursday,friday,saturday];
+		if(mondayStart == true)
+		{
+			daysOfWeek = [monday,tuesday,wednesday,thursday,friday,saturday,sunday];
+		}
+
+		for (local nCount = 0 ; nCount < daysOfWeek.len(); nCount++) 
+		{
+			local DayObject = ButtonObject(this.UI, {
+				identifier="calendar_day",
+				zDepth=2,
+				clickable=false,
+				position={x=0,y=0},
+				size={x=0,y=45},
+				text=daysOfWeek[nCount],
+				fontColor=this.fontColor,
+				color=this.headerColor,
+				fontSize=this.headerFontSize,
+			});
+
+			local dcc = ConstraintController();
+			
+			dcc.setWidth(PercentageConstraint(14.2857));
+			dcc.setHeight(PercentageConstraint(this.headerHeightPerc));
+
+			dcc.setX(PercentageConstraint(14.2857*nCount));
+			dcc.setY(PercentageConstraint(10));
+		
+			DayObject.setConstraintController(dcc);
+			this.addChildObject(DayObject);
+		}
+
+		//run the generate month function.
+		this.GenerateMonth();
+		this.addChildObject(this.DayContainer);
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{
+			//we are empty here as this compound object does not need to run any System draw calls
+	}
+
+	/**
+	removeYearSelector
+	This functions purpose is to if it exists, remove the calendar year selector
+	*/
+	function removeYearSelector()
+	{
+					local yearSelector = this.UI.findObject("calendar_year_selector");
+					if(yearSelector != null)
+					{
+						this.UI.removeDisplayObject(yearSelector.ID);	
+						this.UI.redraw();			
+					}
+	}
+
+	/**
+	updateMonthText
+	this function will update the month text at the top of the calendar
+	*/
+	function updateMonthText()
+	{		
+		//We are setting the objects sub object text to equal the month / year
+		this.monthText.text.text = ICR_GetLanguageText(221 + this.month) + " " + this.year;
+
+		//all this below is to automatically calculate the new width of the text so that the constraints system can work well.
+		//local nMainFont = ICR_CreateFont("Arial", this.monthText.fontSize);
+		local nMainFont = UI.createFont("Arial", this.monthText.fontSize);
+		local nCurFont = ICR_SelectFont(nMainFont);
+		local nWidth = ICR_GetText_Width(this.monthText.text.text);
+		this.monthText.size = {x = nWidth + 40, y = 40};	
+	}
+
+	/**
+	GenerateMonth
+
+	this is the main generator function that generates the whole month and everything in it.
+	*/
+	function GenerateMonth()
+	{		
+		//remove all the day objects inside the container
+		this.DayContainer.removeAllChildObjects();
+		
+		local tMonthLengths = {[1]=31,[2]=28,[3]=31,[4]=30,[5]=31,[6]=30,[7]=31,[8]=31,[9]=30,[10]=31,[11]=30,[12]=31 };		
+		
+		//here we build the stuff
+		local leap = IsLeapYear(this.year);
+		if(leap)
+		{
+			tMonthLengths[2] = 29;
+		}
+
+		//lets get todays date so it can be highlighted
+		local dateToday = date();
+		local FirstDayOfMonth = {
+			day = 1,
+			month = this.month,
+			year = this.year,
+		}
+
+		//useful variables for calculating the amount of days in a month and what day of the week the month starts on.
+		local DaysInMonth = tMonthLengths[this.month];
+		local currentDay = 1;
+		local theWeekDay = this.CalcWeekDay(FirstDayOfMonth, this.mondayStart);
+		local dayOfWeek = theWeekDay.wday;
+		local current_row = 0;
+
+		local self = this;
+		//now we do the main loop to start generating and adding the day objects into the container
+		for (local nCount = 1 ; nCount <= DaysInMonth; nCount++) 
+		{
+
+			local zDepth = 2;
+
+			local current_date_loop = {
+				day = nCount,
+				month = this.month,
+				year = this.year,
+				hour = 0,
+				min = 0,
+				sec = 0,
+			}
+
+			//if the day of the week == 7 then we want to go down a line in the calendar, and so current row is plus 1
+			if(dayOfWeek == 7)
+			{
+				dayOfWeek = 0
+				current_row = current_row + 1;
+			}
+
+			//calculates the x position of the day block
+			local xPos = 0;
+			if(dayOfWeek == 0)
+			{
+				xPos = 0;
+			} 
+			else 
+			{
+				xPos = 14.2857 * dayOfWeek;
+			}
+			
+			//calculates the y position of the day block
+			local yPos = 0;
+			if(current_row == 0)
+			{
+				yPos = 0;
+			} 
+			else 
+			{
+				yPos = 16.6666 * current_row;
+			}
+
+			//Go Through all filters and apply colouring and filters
+			local boxColor = this.dayColor;
+
+			if(this.DateRangeFilters.len() > 0)
+			{
+				for (local nCountt = 0; nCountt < this.DateRangeFilters.len(); nCountt++) 
+				{
+					//here we can set the visible display colours for the filters that are applied to the calendar
+					local filter = this.DateRangeFilters[nCountt];
+					local start_result = DateCompare(filter.start, current_date_loop);
+					local end_result = DateCompare(filter.end, current_date_loop);
+
+					if(filter.start.month <= this.month && filter.end.month >= this.month)
+					{
+						if(start_result == 1 && end_result == -1)
+						{
+							boxColor = filter.color;
+							zDepth = 3;
+							break;
+						}
+
+						if(start_result == 0)
+						{
+							boxColor = filter.color;
+							zDepth = 3;
+							break;
+						} 
+
+						if(end_result == 0)
+						{
+							boxColor = filter.color;
+							zDepth = 3;
+							break;
+						}
+					}
+				}
+			}
+			
+			//set the colour of todays date on the box colour
+			local borderWidth = this.dayBorderWidth;
+			local borderColor = this.dayBorderColor;
+
+			local dayFontColor = this.fontColor;
+
+			local todayTextObject = null;
+			local dayContextStringObject = null;
+
+			//loop through dateContextStrings, if the date matches, then we want to add the context string to the top right
+			if(this.dateContextStrings.len() > 0)
+			{
+				for (local nCountt = 0; nCountt < this.dateContextStrings.len(); nCountt++) 
+				{
+					local contextString = this.dateContextStrings[nCountt];
+					if(nCount == contextString.date.day && this.month == contextString.date.month && this.year == contextString.date.year)
+					{
+							dayContextStringObject = TextObject(this.UI, {
+								position={x=4,y=30},
+								text=contextString.context,
+								fontSize=12,
+								fontColor=Color().black
+							});
+							local contextcc = ConstraintController();
+							contextcc.setHeight(PercentageConstraint(10));
+							contextcc.setY(PercentageConstraint(74));
+							contextcc.setX(RightConstraint(4));
+							dayContextStringObject.setConstraintController(contextcc);
+
+							break;
+					}
+
+				}
+			}
+
+			
+			
+			if(nCount == dateToday.day && this.month == dateToday.month && this.year == dateToday.year)
+			{
+				//boxColor = Color().darkgray;
+				zDepth=5;
+				borderColor = this.activeBorderColor;
+				borderWidth = 2;
+
+				if(this.showTodayText)
+				{
+					todayTextObject = TextObject(this.UI, {
+						position={x=2,y=2},
+						text="Today",
+						fontSize=12,
+						fontColor=Color().black
+					});
+				}
+
+			} 
+
+			//any day in the past, we dont care about it now, its in the past
+			if((nCount < dateToday.day && this.month == dateToday.month && this.year == dateToday.year) || (this.month < dateToday.month && this.year == dateToday.year) || this.year < dateToday.year)
+			{	
+				if(this.grayPast == true)
+				{
+					boxColor = Color().darkgray;
+				}
+				
+			}
+
+
+
+		
+
+
+
+			local DayObject = BoxObject(this.UI, {
+				identifier = "calendar_item",
+				zDepth = zDepth,
+				clickable = true,
+				position = {x = 0, y = 0},
+				size = {x = 0, y = 0},
+				color = Color().white,
+			});
+
+			local currentDate = {
+				day = nCount,
+				month = this.month,
+				year = this.year
+			};
+
+			//Now we get to finally create the day object and set its known positions and colours
+			local daynum = nCount;
+			local self = this //get refrernce to this inside dayobject click
+			local DayObjectBtn = ButtonObject(this.UI, {
+				identifier = "calendar_item_btn",
+				zDepth = 3,
+				clickable = true,
+				position = {x = 0, y = 0},
+				size = {x = 0, y = 0},
+				text = nCount,
+				color = boxColor,
+				expandAmount=0,
+				borderRadius=this.dayBorderRadius,
+				fontSize=this.dayFontSize,
+				borderWidth=borderWidth,
+				borderColor=borderColor,
+
+				mouseDownColor=Color().gray,
+				fontColor=this.fontColor,
+
+				currentDate = currentDate,
+
+				onRedraw = function(){
+						
+						//check to see if this day is in the selectedDates
+						if(self.selectedDates.len() > 0)
+						{
+							for (local nSelectedDate = 0; nSelectedDate < self.selectedDates.len(); nSelectedDate++) 
+							{
+								local selectedDate = self.selectedDates[nSelectedDate];
+								if(this.options.currentDate.day == selectedDate.day && this.options.currentDate.month == selectedDate.month && this.options.currentDate.year == selectedDate.year)
+								{
+									this.color = self.selectedDayColor;
+									this.text.fontColor = self.selectedDayFontColor;
+									//loop through children, set font color to white
+									for (local nSelectedDate = 0; nSelectedDate < this.childObjects.len(); nSelectedDate++) 
+									{
+										local child = this.childObjects[nSelectedDate];
+										child.fontColor = self.selectedDayFontColor;
+									}
+
+									break;
+								}
+								else
+								{
+									this.color = this.options.color;
+									this.text.fontColor = this.options.fontColor;
+									//loop through children, set font color to white
+									for (local nSelectedDate = 0; nSelectedDate < this.childObjects.len(); nSelectedDate++) 
+									{
+										local child = this.childObjects[nSelectedDate];
+										child.fontColor = this.options.fontColor;
+									}
+
+								}
+							}
+						}
+				}
+
+				onMouseDown = function()
+				{
+					if(self.selectMultiple == false)
+					{
+						self.selectedDates = [];
+					}
+					this.zDepth=4
+				},
+				onMouseUp = function()
+				{
+					this.zDepth=2
+				},
+				onClick = function()
+				{
+					local day = {
+						day = daynum,
+						month = self.month,
+						year = self.year
+					};
+
+					local successfull = false;
+					//we are going to loop through the day filters, if onlyFilterClick is set, we want the calendar to only return that date
+					if(self.onlyFilterClick == true)
+					{
+						if(self.DateRangeFilters.len() > 0)
+						{
+							for (local nRangeFilter = 0 ; nRangeFilter < self.DateRangeFilters.len(); nRangeFilter++) 
+							{
+								local filter = self.DateRangeFilters[nRangeFilter];
+								local start_result = DateCompare(filter.start, current_date_loop);
+								local end_result = DateCompare(filter.end, current_date_loop);
+
+								//Are we inside the current selected month?
+								if(start_result == 1 && end_result == -1)
+								{
+									if(self.selectMultiple)
+									{
+										self.selectedDates.push(day);
+									}
+									else
+									{
+										//clear the array
+										self.selectedDates = [];
+										self.selectedDates.push(day);
+									}
+
+									self.dateSelectedCallback(self.selectedDates);
+									successfull = true;
+									break;
+								}
+
+								if(start_result == 0)
+								{
+									if(self.selectMultiple)
+									{
+										self.selectedDates.push(day);
+									}
+									else
+									{
+										//clear the array
+										self.selectedDates = [];
+										self.selectedDates.push(day);
+									}
+
+									self.dateSelectedCallback(self.selectedDates);
+									successfull = true;
+									break;
+								}
+
+								if(end_result == 0)
+								{
+									if(self.selectMultiple)
+									{
+										self.selectedDates.push(day);
+									}
+									else
+									{
+										//clear the array
+										self.selectedDates = [];
+										self.selectedDates.push(day);
+									}
+
+									self.dateSelectedCallback(self.selectedDates);
+									successfull = true;
+									break;
+								}
+							}
+						}
+					} 
+					else 
+					{
+						self.selectedDates.push(day);
+						self.dateSelectedCallback(self.selectedDates);
+					}
+
+					if(successfull == false)
+					{
+						self.failSelectedCallback();
+					}
+				}//end click event
+			}); //end dayobject
+
+			local btnCC = ConstraintController();
+			btnCC.setWidth(PercentageConstraint(this.daySizePerc));
+			btnCC.setHeight(PercentageConstraint(this.daySizePerc-3));
+			btnCC.setX(CenterConstraint());
+			btnCC.setY(CenterConstraint());
+			DayObjectBtn.setConstraintController(btnCC);
+
+			if(todayTextObject){
+				DayObjectBtn.addChildObject(todayTextObject)
+			}
+
+			if(dayContextStringObject)
+			{
+				DayObjectBtn.addChildObject(dayContextStringObject);
+			}
+
+
+			//set the day objects constraints so that everything is scalable and when the calendar is resized everything works as per usual.
+			local CC = ConstraintController();
+			CC.setWidth(PercentageConstraint(14.2857));
+			CC.setHeight(PercentageConstraint(16.6666));
+			CC.setX(PercentageConstraint(xPos));
+			CC.setY(PercentageConstraint(yPos));
+
+			DayObject.setConstraintController(CC);
+
+			DayObject.addChildObject(DayObjectBtn);
+
+			this.DayContainer.addChildObject(DayObject);
+			dayOfWeek = dayOfWeek + 1;
+		}
+	}
+
+	//add a filter into the objects filter array
+
+	/**
+	addFilter
+	@param table - filter - table of filter items like start date enddate and colour.
+	this function will allow you to highlight specific dates on a calendar and have them clickable.
+	*/
+	function addFilter(Filter)
+	{
+		this.DateRangeFilters.push(Filter);
+		this.GenerateMonth();
+	}
+
+	/**
+	CalcWeekDay
+	This is a modified version of the function in the dates lib, where you can make the week start on monday
+	 */
+	function CalcWeekDay(tDate, mondayStart = false)
+	{
+		local tSysData = ICR_GetSystemData();
+		if(tSysData.VERSIONID < 6000)
+		{
+			// prior to version ID 6000 date tables had months starting from 0
+			tDate.month += 1;
+		}
+		// lookup table because 2.6 nd 0.2 are hard work
+		local monthVals = {[1]=0,[2]=3,[3]=2,[4]=5,[5]=0,[6]=3,[7]=5,[8]=1,[9]=4,[10]=6,[11]=2,[12]=4};
+		local mVal = monthVals[tDate.month];
+		if(mondayStart) mVal = mVal - 1
+		local C = tDate.year / 100; // century half of the year
+		local Y = tDate.year % 100; // year within that century
+		if (tDate.month < 3)
+		{
+			// the year starts in march apparently so jan/feb are last year
+			Y -= 1;
+		}
+		local wDay = (tDate.day + mVal + Y + (Y/4) + (C/4) - (2*C)) % 7;
+		if (wDay <0)
+		{
+			wDay = 7 + wDay;
+		}
+		tDate.wday <- wDay;
+		if(tSysData.VERSIONID < 6000)
+		{
+			// if we adjusted it then put it back
+			tDate.month -= 1;
+		}
+		return tDate;
+	}
+
+	/*
+	AddDateContextString
+	@param table - date - table of date items like day month year
+	@param string - context - the context string to be displayed on the calendar
+	@param table - data - any data you want to store with the context string
+	 */
+	function addDateContextString(date, context, data=null)
+	{
+		//remove any existing context strings for this date
+		for (local nCountt = 0; nCountt < this.dateContextStrings.len(); nCountt++) 
+		{
+			local contextString = this.dateContextStrings[nCountt];
+			if(date.day == contextString.date.day && date.month == contextString.date.month && date.year == contextString.date.year)
+			{
+				this.dateContextStrings.remove(nCountt);
+				break;
+			}
+		}
+		//add context string to the dateContextStrings array
+		//it will be {date:Date, context:context}
+		this.dateContextStrings.push({date=date, context=context, data=data});
+		this.GenerateMonth();
+		
+	}
+
+	/**
+	getDateContextByDate
+	@param table - date - table of date items like day month year
+	 */
+	function getDateContextByDate(date)
+	{
+		for (local nCountt = 0; nCountt < this.dateContextStrings.len(); nCountt++) 
+		{
+			local contextString = this.dateContextStrings[nCountt];
+			if(date.day == contextString.date.day && date.month == contextString.date.month && date.year == contextString.date.year)
+			{
+				return contextString;
+			}
+		}
+		return null;
+	}
+
+
+}

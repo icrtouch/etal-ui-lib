@@ -318,10 +318,14 @@ class GUI
 				if(y > item.relpos.y && y < (item.relpos.y + item.size.y))
 				{
 					//Yeppers we have clicked in this item
-					if(item.visible == true && item.clickable == true)
+					if(item.visible == true)
 					{
 						//we only care about visible items
 						foundItems.push(item);
+					}
+					else
+					{
+						continue;
 					}
 				}
 			}
@@ -353,6 +357,17 @@ class GUI
 		local foundObjects = [];
 		foundObjects = this.recurseFindObjectByXY(x,y, this.displayObjects);
 		foundObjects.sort(@(a,b) a.relZDepth <=> b.relZDepth);
+
+		//remove all non clickable items
+		if(foundObjects.len() > 0){ 
+			for(local i = 0; i < foundObjects.len();i++)
+			{
+				if(foundObjects[i].clickable == false)
+				{
+					foundObjects.remove(i);
+				}
+			}
+		}
 		
 		if(foundObjects.len() > 0){ 
 			return foundObjects[foundObjects.len()-1];	
@@ -410,7 +425,7 @@ class GUI
 	this will loop through all the display objects and call their prepaint functions
 	*/
 	function runPaintEvents(ID)
-	{		
+	{	
 		//Only print for this GUI instance if the winID matches
 		if(this.nOurWinID == ID)
 		{		
@@ -444,6 +459,10 @@ class GUI
 					this.runAllMouseUps(objects[i].childObjects);
 				}
 			}
+			
+			// setting hasMouseDown to false 
+			objects[i].hasMouseDown = false;
+
 			if("mouseUp" in objects[i])
 			{
 				objects[i].mouseUp();		
@@ -483,6 +502,17 @@ class GUI
 							if("mouseDown" in clicked)
 							{
 								clicked.mouseDown();
+							}
+							// if the button has had a mouse down then set hasMouseDown to true
+							clicked.hasMouseDown = true;
+						}
+						// if the event is mouseUp
+						if(nEvent == 1)
+						{
+							// if the button has had a mouse down before the mouse up
+							if(clicked.hasMouseDown)
+							{
+								// click on the key to avoid clicking on keys underneath the current window or a different button that you clicked down on
 								clicked.onClick();
 							}
 						}

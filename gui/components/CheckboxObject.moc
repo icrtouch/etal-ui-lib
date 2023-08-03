@@ -1,0 +1,43 @@
+
+class CheckboxObject extends DisplayObject
+{
+	checked = false;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options)
+
+		this.checked = false;
+		
+		local self = this;
+		this.onClick=function(){
+
+			if(self.checked == true)
+			{
+				self.checked = false;
+				UI.redraw();
+			} 
+			else 
+			{
+				self.checked = true;
+				UI.redraw();
+			}
+		}
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{		
+		if(this.checked == true)
+		{
+			ICR_DrawBox(this.relpos.x, this.relpos.y, this.size.x, this.size.y, Color().green);
+		} 
+		else 
+		{
+			ICR_DrawBox(this.relpos.x, this.relpos.y, this.size.x, this.size.y, Color().gray);
+		}			
+	}
+}

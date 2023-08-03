@@ -1,0 +1,184 @@
+
+class SelectOptionObject extends DisplayObject
+{
+	optionsArray = [];
+	selectedCallback = null;
+	optionPlaceholder = "";
+	selectedValue = null;
+	dt = null;
+	selectOptionBox = null;
+
+	function constructor(ui, options)
+	{
+		base.constructor(ui, options);
+
+		if("optionsArray" in options)
+		{
+			this.optionsArray = options.optionsArray;
+		} 
+		else 
+		{
+			this.optionsArray = [];
+		}
+
+		if("selectedValue" in options)
+		{
+			this.selectedValue = options.selectedValue;
+		} 
+		else 
+		{
+			this.selectedValue = "";
+		}
+
+		if("selectedCallback" in options)
+		{
+			this.selectedCallback = options.selectedCallback;
+		} 
+		else 
+		{
+			this.selectedCallback = function() {};
+		}
+		
+		if("optionPlaceholder" in options)
+		{
+			this.optionPlaceholder = options.optionPlaceholder;
+		} 
+		else 
+		{
+			this.optionPlaceholder = "Please Select a option";
+		}
+
+		local self = this;
+		this.selectOptionBox = ButtonObject(UI, {
+			color = 0xf2f2f2,
+			fontColor = Color().black,
+			size = {x = 300, y = 25},
+			text = "",
+			bindText = function()
+			{
+				//this somehow works? i think as its an anon function "self" is a pointer
+				if("text" in self.selectedValue)
+				{
+					return self.selectedValue.text;
+				} 
+				else 
+				{
+					return self.optionPlaceholder;
+				}
+			},
+			zDepth = 1,
+			expand = false,
+			onClick = function()
+			{
+				self.createDropDown();
+				self.UI.redraw();
+			}
+		});
+
+		local selectboxcc = ConstraintController();
+		selectboxcc.setWidth(PercentageConstraint(100));
+		this.selectOptionBox.setConstraintController(selectboxcc);
+
+		local downIcon = TextObject(UI, {
+			text = "v",
+			size = {x = 25, y = 25},
+			zDepth = 2,
+			fontColor = Color().black
+		});
+
+		local downIconcc = ConstraintController();
+		downIconcc.setX(PercentageConstraint(95));
+		downIconcc.setY(CenterConstraint());
+		downIconcc.setWidth(PercentageConstraint(5));
+		downIcon.setConstraintController(downIconcc);
+
+		this.addChildObject(downIcon);
+
+		this.addChildObject(this.selectOptionBox);
+	}
+
+	/**
+	setSelected
+	@param String - value - any value you want to set on selected
+	*/
+	function setSelected(value)
+	{
+		this.selectedValue = value;
+	}
+
+	/**
+	createDropDown
+	this function will generate the list, populate it and add it as a child
+	*/
+	function createDropDown()
+	{
+		//we need to remake options array into array of buttons for the datatable object
+		local buttonArray = [];
+		local self = this;
+		for (local nCount = 0 ; nCount < this.optionsArray.len(); nCount++) 
+		{
+			local currentCount = nCount;
+			local button = ButtonObject(this.UI, {
+				position = {x = 0, y = 0},
+				size = {x = 100, y = 25},
+				text = this.optionsArray[nCount].text,
+				color = Color().lightgray,
+				zDepth = 9,
+				onMouseDown=function()
+				{
+					this.color = Color().gray;
+					this.zDepth = 100;
+				},
+				onMouseUp = function()
+				{
+					this.color = Color().lightgray;
+					this.zDepth=10;
+				},
+				onClick = function()
+				{
+					self.selectedCallback(self.optionsArray[currentCount], currentCount);
+					self.selectedValue = self.optionsArray[currentCount];
+					self.selectOptionBox.text.text = self.selectedValue;
+
+					//also close this dropdown
+					self.UI.removeDisplayObject(self.dt.ID);
+					self.UI.redraw();
+				}
+			});
+
+			local itemcc = ConstraintController();
+			itemcc.setWidth(PercentageConstraint(100));
+			button.setConstraintController(itemcc);
+			buttonArray.push([button]);
+		}		
+
+		this.dt = DataTableObject(this.UI, {
+			size = {x = 300, y = 120},
+			dataArray = buttonArray,
+			rows = 4,
+			rowPadding = 3,
+			zDepth = 3
+		});
+
+		local dtcc = ConstraintController();
+		dtcc.setWidth(PercentageConstraint(100))
+		dt.setConstraintController(dtcc);
+
+		this.addChildObject(this.dt);
+	}
+
+	/**
+	prepaint (OVERRIDE)
+	this is the main prepaint function of the displayObject being overriden
+	*/
+	function prepaint()
+	{
+		base.prepaint();
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint() {}
+}

@@ -244,3 +244,180 @@ class PercentageConstraint extends Constraint
 		}
 	}
 }
+
+/**
+Right Constraint
+Constrain the object to be from the right edge of its parent
+ */
+class RightConstraint extends Constraint
+{
+
+	distance = 0;
+
+	function constructor(value)
+	{
+		this.distance = value;
+	}
+
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{
+		local Parent = object.getParent();
+		
+		if(Parent)
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (Parent.size.x - object.size.x) + Parent.relpos.x - this.distance, 
+					y = object.relpos.y
+				};
+			}
+		} 
+		else 
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (object.UI.tOurWinSize.WIDTH - object.size.x) - this.distance, 
+					y = object.relpos.y
+				};
+			}
+		}
+	}
+}
+
+/** 
+Right Percentage Constraint 
+Constrain the object to be from the right edge of its parent
+*/
+class RightPercentageConstraint extends Constraint
+{
+	percentage = 0;
+
+	function constructor(value)
+	{
+		this.percentage = value;
+	}
+
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{
+		local Parent = object.getParent();
+		
+		if(Parent)
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (floor(( (Parent.size.x - object.size.x) + Parent.relpos.x) - (Parent.size.x * (this.percentage / 100.0)))), 
+					y = object.relpos.y
+				};
+			}
+		} 
+		else 
+		{
+			if(this.attribute == "x")
+			{
+				object.relpos = {
+					x = (floor((object.UI.tOurWinSize.WIDTH - object.size.x) - (object.UI.tOurWinSize.WIDTH * (this.percentage / 100.0)))),
+					y = object.relpos.y
+				};
+			}
+		}
+	}
+}
+
+/**
+Bottom Constraint
+Constrain the object to be from the bottom edge of its parent
+ */
+class BottomConstraint extends Constraint
+{
+	distance = 0;
+
+	function constructor(value)
+	{
+		this.distance = value;
+	}
+
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{
+		local Parent = object.getParent();
+		
+		if(Parent)
+		{
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (Parent.size.y - object.size.y) + Parent.relpos.y - this.distance, 
+					x = object.relpos.x
+				};
+			}
+		} 
+		else 
+		{
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (object.UI.tOurWinSize.HEIGHT - object.size.y) - this.distance, 
+					x = object.relpos.x
+				};
+			}
+		}
+	}
+}
+
+/** 
+Bottom Percentage Constraint
+Constrain the object to be from the bottom edge of its parent
+ */
+class BottomPercentageConstraint extends Constraint
+{
+	percentage = 0;
+
+	function constructor(value)
+	{
+		this.percentage = value;
+	}
+
+	/**
+	runConstraint
+	@param DisplayObject - object - Object you are applying the constraint to
+	*/
+	function runConstraint(object)
+	{
+		local Parent = object.getParent();
+		
+		if(Parent)
+		{
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (floor(( (Parent.size.y - object.size.y) + Parent.relpos.y) - (Parent.size.y * (this.percentage / 100.0)))),
+					x = object.relpos.x
+				};
+			}
+		} 
+		else 
+		{
+			if(this.attribute == "y")
+			{
+				object.relpos = {
+					y = (floor((object.UI.tOurWinSize.HEIGHT - object.size.y) - (object.UI.tOurWinSize.HEIGHT * (this.percentage / 100.0)))),
+					x = object.relpos.x
+				};
+			}
+		}
+	}
+}

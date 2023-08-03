@@ -1,0 +1,62 @@
+class ProgressBarObject extends BoxObject
+{
+	PercentBox = null;
+
+	percent = 0;
+
+	bindPercent = null;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		if(options.percent)
+		{
+			this.percent = options.percent;
+
+			local pColor = Color().blue;
+			if("percentColor" in options)
+			{
+				pColor = options.percentColor;
+			}
+
+			this.PercentBox = BoxObject(UI, {
+				position = {x = 0,y = 0},
+				size = {x = 0,y = 0},
+				color = pColor
+			});
+
+			local constraintControl = ConstraintController();
+			constraintControl.setWidth(PercentageConstraint(this.percent));
+			constraintControl.setHeight(PercentageConstraint(100));
+			this.PercentBox.setConstraintController(constraintControl);
+
+			this.addChildObject(PercentBox);
+		}
+
+		if("bindPercent" in options)
+		{
+			this.bindPercent = options.bindPercent;
+		}
+	}
+
+	/**
+	prepaint (OVERRIDE)
+	this is the main prepaint function of the displayObject being overriden
+	*/
+	function prepaint()
+	{
+		if(this.bindPercent != null)
+		{
+			local percent = this.bindPercent();
+			this.percent = percent;
+
+			local constraintControl = ConstraintController();
+			constraintControl.setWidth(PercentageConstraint(this.percent));
+			constraintControl.setHeight(PercentageConstraint(100))
+			this.PercentBox.setConstraintController(constraintControl);			
+		}
+
+		base.prepaint();
+	}
+}

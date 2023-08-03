@@ -10,6 +10,7 @@ class DisplayObject
 	//settings
 	visible = true;
 	clickable = true;
+	hasMouseDown = false;
 
 	//Positions -----
 	zDepth = 0;
@@ -17,7 +18,7 @@ class DisplayObject
 	pos = {x = 0, y = 0};
 	relpos = {x = 0, y = 0};
 	size = {x = 100, y = 100};	
-	
+
 	//extra
 	options = {};
 	childObjects=[];
@@ -29,13 +30,16 @@ class DisplayObject
 	//events
 	onClick = null 
 	afterPaint = {};
-	beforePaint = {};	
+	beforePaint = {};
+	onRedraw = null;	
 
 	function constructor(ui, options)
 	{	    
 		this.UI = ui;
 
 		this.childObjects = [];
+
+		this.hasMouseDown = false;
 		
 		//Each newly created object needs a unique ID so parent linking works 
 		UI.objectIDCounter = UI.objectIDCounter + 1;
@@ -127,6 +131,16 @@ class DisplayObject
 		{
 			this.onClick = function() {};
 		}	
+
+		//lets create a general onRedraw function, which gives us scope of "this" allowing us to change object state based of criteria.
+		//IE self updating components that listen for data changes.
+		if("onRedraw" in options)
+		{
+			this.onRedraw = options.onRedraw;
+		} else 
+		{
+			this.onRedraw = null
+		}
 	}
 	
 
@@ -260,6 +274,14 @@ class DisplayObject
 	{
 		local Parent = this.getParent();
 
+		//if redraw exists, call it
+		if(this.onRedraw != null)
+		{
+			if(typeof this.onRedraw == "function"){
+				this.onRedraw();
+			}
+		}
+
 		//lets calculate relative zDepths for click events so we know who is on top
 		if(Parent != null)
 		{	
@@ -294,6 +316,7 @@ class DisplayObject
 		{
 			this.constraint_controller.run_constraints(this);
 		}
+
 		
 		if(this.visible == true)
 		{
@@ -364,6 +387,12 @@ class BoxObject extends DisplayObject
 {
 	color = 0xFFFFFF
 	borderRadius = 0;
+	borderWidth = 0;
+	borderColor = 0x000000;
+	borderRadiusFlags = [1,1,1,1];
+
+	//adaptors
+	margin = 0;
 
 	function constructor(ui, options)
 	{
@@ -384,6 +413,61 @@ class BoxObject extends DisplayObject
 		{
 			this.borderRadius = options.borderRadius;
 		}
+		else
+		{
+			this.borderRadius = 0;
+		} 
+
+		if("borderWidth" in options)
+		{
+			this.borderWidth = options.borderWidth;
+		} 
+		else
+		{
+			this.borderWidth = 0;
+		}
+
+		if("borderColor" in options)
+		{
+			this.borderColor = options.borderColor;
+		} 
+		else
+		{
+			this.borderColor = 0x000000;
+		}
+
+		if("borderRadiusFlags" in options)
+		{
+			this.borderRadiusFlags = options.borderRadiusFlags;
+		}
+		else
+		{
+			this.borderRadiusFlags = [1,1,1,1]; //topleft, topright, bottomright, bottomleft
+		}
+
+		if("margin" in options)
+		{
+			this.margin = options.margin;
+		}
+		else
+		{
+			this.margin = 0;
+		}
+
+
+
+
+	}
+
+	/**
+	drawBorder
+
+	this will draw another box with radius, however it will override the colour
+	to the borderColor
+	*/
+	function drawBorder()
+	{
+		drawBoxWithRadius(this.borderWidth - this.margin, this.borderColor);
 	}
 
 	/**
@@ -391,56 +475,84 @@ class BoxObject extends DisplayObject
 
 	this will draw a box with radius on the corners
 	*/
-	function drawBoxWithRadius()
+	function drawBoxWithRadius(padding = 0, colorOverride = null)
 	{
-		local topleft = {x = this.relpos.x, y = this.relpos.y};
-		local topright = {x = (this.relpos.x + this.size.x), y = (this.relpos.y)};
-		local bottomleft = {x = this.relpos.x, y = (this.relpos.y + this.size.y)};
-		local bottomright = {x = (this.relpos.x + this.size.x),y = (this.relpos.y + this.size.y)};
-				
-		local topleftcolor = ICR_GetPixel(topleft.x, topleft.y);
-		local toprightcolor = ICR_GetPixel(topright.x, topright.y);
-		local bottomleftcolor = ICR_GetPixel(bottomleft.x, bottomleft.y);
-		local bottomrightcolor = ICR_GetPixel(bottomright.x, bottomright.y);
-		//DRAW MAIN BOX
-		ICR_DrawBox(this.relpos.x, this.relpos.y, this.size.x, this.size.y, this.options.color);
-		//lets do this
 		
+		local topleft = {x = this.relpos.x - padding, y = this.relpos.y - padding};
+		local topright = {x = (this.relpos.x + this.size.x + padding), y = (this.relpos.y - padding)};
+		local bottomleft = {x = this.relpos.x - padding, y = (this.relpos.y + this.size.y + padding)};
+		local bottomright = {x = (this.relpos.x + this.size.x + padding),y = (this.relpos.y + this.size.y + padding)};
+
+		local baseColor = this.color;
+		if(colorOverride != null)
+		{
+			baseColor = colorOverride;
+		}
+
 		local resolution = 1;
 		local radius = this.borderRadius;
+		if(this.borderRadius > 0)
+		{	
+			//this is needed because if we are getting smaller, the radius shouldnt get smaller
+			//but if we are getting bigger, the radius should change.
+			if(padding > 0)
+			{
+				radius = radius + padding;
+			}
+		}
+		
 		local PI = 3.1415926535;
 
-		ICR_DrawBox(topleft.x, topleft.y, radius, radius, topleftcolor);
+		//create variables for piechart function
 		local nY1 = floor(sin(90) * radius).tointeger();
 		local nX1 = floor(cos(90) * radius).tointeger();
-
 		local nY2 = floor(sin(90) * radius).tointeger();
 		local nX2 = floor(cos(90) * radius).tointeger();
-		ICR_DrawPie(topleft.x, topleft.y, radius * 2, radius * 2, topleft.x + radius + nX1, topleft.y + radius + nY1, topleft.x + radius + nX2, topleft.y + radius + nY2, this.options.color, this.options.color);
 
-		ICR_DrawBox(topright.x-radius, topright.y , radius, radius, toprightcolor);
-		local nY1 = floor(sin(90) * radius).tointeger();
-		local nX1 = floor(cos(90) * radius).tointeger();
+		//steps for drawing the box with a radius, first put circles in each corner
+		//first left draw all the circles
+		//topleft
+		if(this.borderRadiusFlags[0] == 1)
+		{
+			ICR_DrawPie(topleft.x, topleft.y, radius * 2, radius * 2, topleft.x + radius + nX1, topleft.y + radius + nY1, topleft.x + radius + nX2, topleft.y + radius + nY2, baseColor, baseColor);
+		} 
+		else 
+		{
+			ICR_DrawBox(topleft.x, topleft.y, radius + padding, radius + padding, baseColor);
+		}
+		//topright
+		if(this.borderRadiusFlags[1] == 1)
+		{
+			ICR_DrawPie(topright.x - radius * 2, topright.y, radius * 2, radius * 2, topright.x + radius + nX1, topright.y + radius + nY1, topright.x + radius + nX2, topright.y + radius + nY2, baseColor, baseColor);
+		} 
+		else
+		{
+			ICR_DrawBox(topright.x - (radius + padding), topleft.y, radius + padding, radius + padding, baseColor);
+		}
+		//bottomleft
+		if(this.borderRadiusFlags[3] == 1)
+		{
+			ICR_DrawPie(bottomleft.x, bottomleft.y - radius * 2, radius * 2, radius * 2, bottomleft.x + radius+nX1, bottomleft.y + radius + nY1, bottomleft.x + radius + nX2, bottomleft.y + radius + nY2, baseColor, baseColor);
+		}
+		else
+		{
+			ICR_DrawBox(bottomleft.x, bottomleft.y - (radius + padding), radius + padding, radius + padding, baseColor);
+		}
+		//bottomright
+		if(this.borderRadiusFlags[2] == 1)
+		{
+			ICR_DrawPie(bottomright.x - radius * 2, bottomright.y - radius * 2, radius * 2, radius * 2, bottomright.x + radius + nX1, bottomright.y + radius + nY1, bottomright.x + radius + nX2, bottomright.y + radius + nY2, baseColor, baseColor);
+		}
+		else
+		{
+			ICR_DrawBox(bottomright.x - (radius + padding), bottomright.y - (radius + padding), radius + padding, radius + padding, baseColor);
+		}
 
-		local nY2 = floor(sin(90) * radius).tointeger();
-		local nX2 = floor(cos(90) * radius).tointeger();
-		ICR_DrawPie(topright.x - radius * 2, topright.y, radius * 2, radius * 2, topright.x + radius + nX1, topright.y + radius + nY1, topright.x + radius + nX2, topright.y + radius + nY2, this.options.color, this.options.color);
-	
-		ICR_DrawBox(bottomleft.x, bottomleft.y - radius , radius, radius, bottomleftcolor);
-		local nY1 = floor(sin(90) * radius).tointeger();
-		local nX1 = floor(cos(90) * radius).tointeger();
-
-		local nY2 = floor(sin(90) * radius).tointeger();
-		local nX2 = floor(cos(90) * radius).tointeger();
-		ICR_DrawPie(bottomleft.x, bottomleft.y - radius * 2, radius * 2, radius * 2, bottomleft.x + radius+nX1, bottomleft.y + radius + nY1, bottomleft.x + radius + nX2, bottomleft.y + radius + nY2, this.options.color, this.options.color);
-
-		ICR_DrawBox(bottomright.x-radius, bottomright.y-radius , radius, radius, bottomrightcolor);
-		local nY1 = floor(sin(90) * radius).tointeger();
-		local nX1 = floor(cos(90) * radius).tointeger();
-
-		local nY2 = floor(sin(90) * radius).tointeger();
-		local nX2 = floor(cos(90) * radius).tointeger();
-		ICR_DrawPie(bottomright.x - radius * 2, bottomright.y - radius * 2, radius * 2, radius * 2, bottomright.x + radius + nX1, bottomright.y + radius + nY1, bottomright.x + radius + nX2, bottomright.y + radius + nY2, this.options.color, this.options.color);
+		//now draw the construction boxes
+		//top
+		ICR_DrawBox(topleft.x + radius, topleft.y, (this.size.x + padding) - (radius * 2) + padding, this.size.y + (padding *2), baseColor);
+		//left
+		ICR_DrawBox(topleft.x, topleft.y + radius, this.size.x + (padding * 2), (this.size.y + padding) - (radius * 2) + padding, baseColor);
 	}
 
 	/**
@@ -449,19 +561,28 @@ class BoxObject extends DisplayObject
 	*/
 	function paint()
 	{			
+
+
+		if(this.borderWidth > 0)
+		{
+			this.drawBorder();
+		}
+
+
 		//Now draw the border radius over the created BOX
 		if(this.borderRadius > 0)
 		{		
 			//we want to check BEFORE we draw our box, so that we get the colors underneith the box
 			//for now we just check one pixel as we dont want to use too much cpu time
-			drawBoxWithRadius();
+			drawBoxWithRadius(-this.margin);
 		
 		} 
 		else 
 		{
 			//No radius, just draw the box
 			//DRAW MAIN BOX
-			ICR_DrawBox(this.relpos.x, this.relpos.y , this.size.x, this.size.y, this.color);		
+			local marginPos = this.margin / 2;
+			ICR_DrawBox(this.relpos.x + marginPos, this.relpos.y + marginPos, this.size.x - this.margin, this.size.y - this.margin, this.color);		
 		}			
 	}
 }

@@ -1,0 +1,115 @@
+class TextInputObject extends DisplayObject
+{
+	returnedText = "";
+	placeholder = "";
+	textObject = null;
+	
+	text = "";
+	fontSize = 20;
+	fontColor = 0xFFFFFF;
+
+	color = 0xf2f2f2;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		if("color" in options)
+		{
+			this.color = options.color;
+		} 
+		else 
+		{
+			this.color = 0xf2f2f2;
+		}
+
+		//if this has a font, it will use this
+		if("fontSize" in options)
+		{
+			this.fontSize = options.fontSize;
+		} 
+		else 
+		{
+			this.fontSize = 20;
+		}
+
+		//if this uses text, this sets the font colour
+		if("fontColor" in options)
+		{
+			this.fontColor = options.fontColor;
+		} 
+		else 
+		{
+			this.fontColor = 0xFFFFFF;
+		}
+
+		//if this uses text, this is how you set the text content
+		if("text" in options)
+		{
+			this.text = options.text;
+		} 
+		else 
+		{
+			this.text = "";
+		}
+
+		if("placeholder" in options)
+		{
+			this.placeholder = options.placeholder;
+
+			local nMainFont = UI.createFont("Arial", this.fontSize);
+			local nCurFont = ICR_SelectFont(nMainFont);
+			
+			local nWidth = ICR_GetText_Width(options.placeholder);
+			local nHeight = ICR_GetText_Height(options.placeholder);
+
+			this.textObject = TextObject(UI, {
+				zDepth = 1,
+				size = {x = nWidth, y = nHeight},
+				clickable = false,
+				text = this.placeholder,
+				fontSize = this.fontSize,
+				fontColor = this.fontColor
+			});
+			
+			local CC = ConstraintController();
+			CC.setX(PercentageConstraint(10));
+			CC.setY(CenterConstraint());
+			this.textObject.setConstraintController(CC); //setConstraintController
+			
+			//add object to UI Control
+			this.addChildObject(this.textObject);
+		}
+
+		this.clickable = true;
+		this.returnedText = "";
+
+		local self = this;
+
+		this.onClick = function()
+		{			
+			this.returnedText = ICR_GetAlphaDialog(this.placeholder, 500, true, "");
+			if(this.returnedText == "" || this.returnedText == null)
+			{
+				this.textObject.text = this.placeholder;
+			} 
+			else 
+			{
+				this.textObject.text = this.returnedText;
+			}			
+			UI.redraw();
+		}
+	}
+
+	function mouseDown() {}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{
+		ICR_DrawBox(this.relpos.x, this.relpos.y, this.size.x, this.size.y, this.color);
+		ICR_DrawFrame(this.relpos.x, this.relpos.y, this.size.x, this.size.y, 2, this.options.borderColor);
+	}
+}

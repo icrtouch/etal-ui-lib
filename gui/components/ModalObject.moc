@@ -1,0 +1,139 @@
+class ModalObject extends DisplayObject
+{
+	DoneText = "";
+	DoneTextColor = 0x000000;
+	DoneBgColor = 0xFFFFFFF;
+	DoneBoxBgColor = 0xFFFFFFF;
+
+	ContentBox = null;
+	DoneBtn = null;
+
+	DoneCallback = null;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		if("DoneCallback" in options)
+		{
+			this.DoneCallback = options.DoneCallback;
+		} 
+		else 
+		{
+			this.DoneCallback = {
+				callback = function() {}
+			};
+		}
+
+		if("DoneText" in options)
+		{
+			this.DoneText = options.DoneText;
+		} 
+		else 
+		{
+			this.DoneText = "Done";
+		}
+
+		if("DoneTextColor" in options)
+		{
+			this.DoneTextColor = options.DoneTextColor;
+		} 
+		else 
+		{
+			this.DoneTextColor = Color().white;
+		}
+
+		if("DoneBgColor" in options)
+		{
+			this.DoneBgColor = options.DoneBgColor;
+		} 
+		else 
+		{
+			this.DoneBgColor = Color().success_btn_bg;
+		}
+
+		if("DoneBoxBgColor" in options)
+		{
+			this.DoneBoxBgColor = options.DoneBoxBgColor;
+		}
+		else 
+		{
+			this.DoneBoxBgColor = Color().success_bg;
+		}
+
+		//Generate
+		this.ContentBox = BoxObject(UI, {
+			size = {x = 0, y = 0},
+			position = {x = 0, y = 0},
+			color = options.color
+		});
+
+		local contentConstr = ConstraintController();
+		contentConstr.setWidth(PercentageConstraint(100));
+		contentConstr.setHeight(PercentageConstraint(100));
+		this.ContentBox.setConstraintController(contentConstr);
+
+		this.addChildObject(this.ContentBox);
+
+		local donebox = BoxObject(UI, {
+			size = {x = 0, y = 60},
+			position = {x = 0, y = 0},
+			zDepth = 20,
+			color = this.DoneBoxBgColor,
+		});
+
+		local doneboxConst = ConstraintController();
+		doneboxConst.setWidth(PercentageConstraint(100));
+		doneboxConst.setY(PercentageConstraint(90));
+		donebox.setConstraintController(doneboxConst);
+
+		local self = this;
+		this.DoneBtn = ButtonObject(UI, {
+			position = {x = 0, y = 0},
+			size = {x = 0, y = 40},
+			color = this.DoneBgColor,
+			fontColor = Color().white,
+			text = this.DoneText,
+			zDepth = 10,
+			onClick = function()
+			{
+				self.removeAllChildObjects();
+				self.UI.removeDisplayObject(self.ID);
+				self.UI.redraw();
+
+				//Run its callback if set
+				self.DoneCallback.callback();
+			}
+		});
+
+		local doneConst = ConstraintController();
+		doneConst.setWidth(PercentageConstraint(90));
+		doneConst.setY(CenterConstraint());
+		doneConst.setX(CenterConstraint());
+		this.DoneBtn.setConstraintController(doneConst);
+		donebox.addChildObject(this.DoneBtn);
+
+		this.addChildObject(donebox);
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint() {}
+
+	function addContent(contentObject)
+	{
+			this.ContentBox.addChildObject(contentObject);
+	}
+
+	/**
+	getContentBox
+
+	this function returns the contentBox so that you can add children to it at a later date
+	*/
+	function getContentBox()
+	{
+		return this.ContentBox;
+	}
+}

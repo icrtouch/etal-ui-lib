@@ -1,0 +1,385 @@
+class DataTableObject extends DisplayObject
+{
+	dataArray = [];
+	colArray = [];
+	colOptions = {};
+	ListControl = null;
+	rows = 10;
+	rowPadding = 4;
+	scrollPos = 0;
+
+	function constructor(ui, options)
+	{
+		base.constructor(ui, options);
+
+		if("dataArray" in options)
+		{
+			this.dataArray = options.dataArray;
+		} 
+		else 
+		{
+			this.dataArray = [];
+		}
+		
+		if("colOptions" in options)
+		{
+			this.colOptions = options.colOptions;
+		} 
+		else 
+		{
+			this.colOptions = {};
+		}
+
+		if("colArray" in options)
+		{
+			this.colArray = options.colArray;
+		} 
+		else 
+		{
+			this.colArray = [];
+		}
+
+		if("rows" in options)
+		{
+			this.rows = options.rows;
+		} 
+		else 
+		{
+			this.rows = 10;
+		}
+
+		if("rowPadding" in options)
+		{
+			this.rowPadding = options.rowPadding;
+		} 
+		else 
+		{
+			this.rowPadding = 4;
+		}
+
+		this.scrollPos = 0;
+
+		//we need a header and a footer, on the top and the bottom of the data table
+		local tableSize = this.size;
+		
+		local ListContainer = BoxObject(ui, {	
+			color = Color().blue,
+			position = {x = 0, y = 25}
+		});
+
+		local containercc = ConstraintController();
+		containercc.setWidth(PercentageConstraint(100));
+		containercc.setHeight(PercentageConstraint(90));
+		ListContainer.setConstraintController(containercc);
+		
+
+		local ArrayOfItems = generateRows(this.dataArray);
+
+		//lets make a main listObject to contain the current displaying items
+		this.ListControl = ListObject(ui, {
+			size = {x = 0, y = 0},
+			zDepth = 10,
+			color = Color().white,
+			position = {x = 0, y = 0},
+			objectList = [],
+			listPadding = {x = 0, y = this.rowPadding},
+			shrinkWrap = false
+		});
+
+		local listcc = ConstraintController();
+		listcc.setWidth(PercentageConstraint(100));
+		listcc.setHeight(PercentageConstraint(100));
+		this.ListControl.setConstraintController(listcc);
+
+		//add list to container
+		ListContainer.addChildObject(this.ListControl);
+
+		local header=BoxObject(this.UI, {
+			size = {x = 0, y = 25},
+			color = 0xe2e2e2,
+			zDepth = 20
+		});
+
+		local headercc = ConstraintController();
+		headercc.setWidth(PercentageConstraint(100));
+		header.setConstraintController(headercc);
+
+		if(this.colArray.len() > 0)
+		{
+			local nPercentageCounter = 0;
+			for (local rowCount = 0; rowCount < this.colArray.len(); rowCount++) 
+			{
+				local col = BoxObject(this.UI, {
+					size = {x = 0, y = 25},
+					position = {x = 0, y = 0},
+				});
+
+				local colcc = ConstraintController();
+				//If we define a width percentage then set it, else split the columns evenly.
+				//Have we been sent an array?. 
+				//Check to see if the number of percentages sent is enough for the number of columns. 
+				if("width" in this.colOptions && typeof this.colOptions.width == "array" && this.colOptions.width.len() == this.colArray.len())
+				{
+					//set the column size for each  column in turn
+					if(this.colOptions.width[rowCount])
+					{
+						//Start at 0 on the left for the first column
+						if(nPercentageCounter == 0)
+						{
+							colcc.setX(PercentageConstraint(0));
+							//Tally up the percentage as we go to set the xPOS for each column
+							nPercentageCounter = (nPercentageCounter + this.colOptions.width[rowCount]);
+						}
+						//for all subsequent columns
+						else
+						{
+							colcc.setX(PercentageConstraint(nPercentageCounter));
+							nPercentageCounter = (nPercentageCounter + this.colOptions.width[rowCount]);
+							col.setConstraintController(colcc);
+						}
+					}
+					
+				}
+				else
+				//Incorrect width params. Set columns equal widths.
+				{
+					local xperc = (100/this.colArray.len()) * (rowCount);
+					colcc.setX(PercentageConstraint(xperc));
+					col.setConstraintController(colcc);
+				}
+
+
+				local rowItem = TextObject(this.UI, {
+					size = {x = 0, y = 25},
+					position = {x = 5, y = 0},
+					fontColor = Color().black,
+					text = this.colArray[rowCount] //must be a string
+				});
+
+				local rowitemcc = ConstraintController();
+				rowitemcc.setY(CenterConstraint());
+				rowItem.setConstraintController(rowitemcc);
+
+				col.addChildObject(rowItem);
+				header.addChildObject(col);
+			}
+		}
+
+		this.addChildObject(header);
+
+		local scrollbox = BoxObject(ui, {
+			color = 0xe2e2e2,
+			size = {x = 40, y = 0},
+			zDepth = 30
+		});
+
+		local scrollcc = ConstraintController();
+		scrollcc.setHeight(PercentageConstraint(100));
+		scrollcc.setX(PercentageConstraint(100));
+		scrollbox.setConstraintController(scrollcc);
+
+		local self = this;
+		
+		local buttonUp = ButtonObject(UI, {
+			zDepth = 30,
+			position = {x = 0, y = 0},
+			size = {x = 40, y = 30},
+			text = "^",
+			color = Color().gray,
+			fontColor = Color().white,
+			onClick = function()
+			{
+				self.scrollPos = self.scrollPos - 1;
+				self.updateScroll();
+			}
+		});
+
+		local upcc = ConstraintController();
+		buttonUp.setConstraintController(upcc);
+
+		scrollbox.addChildObject(buttonUp);
+
+		local buttonDown = ButtonObject(UI,{
+			zDepth = 30,
+			position = {x = 0, y = 0},
+			size = {x = 40, y = 30},
+			text = "v",
+			color = Color().gray,
+			fontColor = Color().white,
+			onClick = function()
+			{
+				self.scrollPos = self.scrollPos + 1;
+				self.updateScroll();
+			}
+		});
+
+		local downcc = ConstraintController();
+		downcc.setY(PercentageConstraint(90));
+		buttonDown.setConstraintController(downcc);
+
+
+		scrollbox.addChildObject(buttonDown);
+
+		this.addChildObject(scrollbox);
+
+		//add main container to the datatable	
+		this.addChildObject(ListContainer);
+
+		this.updateScroll();
+	}
+
+	
+	/**
+	updateScroll
+
+	this function will generate the list objects items and add them as children with a updated scroll position
+	*/
+	function updateScroll()
+	{
+		if(this.scrollPos < 0)
+		{
+			this.scrollPos = 0;
+		}
+
+		//here we need to grab a mask of the source items
+		local mask = [];
+
+		local endofMask = this.rows + this.scrollPos;
+		local maxRows = this.dataArray.len();
+		if(maxRows < this.rows + this.scrollPos)
+		{
+			endofMask = maxRows;
+		}
+
+		for (local nCount = this.scrollPos; nCount < endofMask; nCount++) 
+		{
+			mask.push(this.dataArray[nCount]);
+		}
+		
+		this.updateRows(mask);
+	}
+
+	/**
+	updateRows
+
+	this function will generate the list objects items and add them as children with a updated scroll position
+	*/
+	function updateRows(currentList)
+	{
+		this.ListControl.objectList = generateRows(currentList)
+		this.ListControl.generateList();
+		this.UI.redraw();
+	}
+
+	/**
+	generateRows
+
+	this function will generate the list objects items and add them as children with a updated scroll position
+	*/
+	function generateRows(sourceData)
+	{
+		local ArrayOfItems = [];
+		for (local nCount = 0 ; nCount < sourceData.len(); nCount++) 
+		{
+			local element = sourceData[nCount];
+			local xSize = element.len();
+
+			local row = BoxObject(this.UI, {
+				color = Color().white,
+				position = {x = 0, y = 0},
+				size = {x = 0, y = 25}
+			})
+			local rowcc = ConstraintController();
+			rowcc.setWidth(PercentageConstraint(100));
+			row.setConstraintController(rowcc);
+
+			local nPercentageCounter = 0;
+
+			for (local rowCount = 0; rowCount < xSize; rowCount++) 
+			{
+				local col = BoxObject(this.UI, {
+					size = {x = 0, y = 25},
+					position = {x = 0, y = 0},
+				});
+
+				local colcc = ConstraintController();
+				//If we define a width percentage then set it, else split the columns evenly.
+				//Have we been sent an array?. 
+				//Check to see if the number of percentages sent is enough for the number of columns. 
+				if("width" in this.colOptions && typeof this.colOptions.width == "array" && this.colOptions.width.len() == this.colArray.len())
+				{
+					//Set each column in turn
+					if(colOptions.width[rowCount])
+					{
+						//Frist column starts at xPos 0 on the left.
+						if(nPercentageCounter == 0)
+						{
+							colcc.setX(PercentageConstraint(0));
+							nPercentageCounter = (nPercentageCounter + colOptions.width[rowCount]);
+						}
+						//Subsequent columns start after the previous columns position.
+						else
+						{
+							colcc.setX(PercentageConstraint(nPercentageCounter));
+							nPercentageCounter = (nPercentageCounter + colOptions.width[rowCount]);
+							
+						}
+						colcc.setWidth(PercentageConstraint(colOptions.width[rowCount]));
+						col.setConstraintController(colcc);
+
+					}
+					
+				}
+				//Incorrect width params. Each column will just be equal widths. 
+				else
+				{
+					local xperc = (100/xSize)*(rowCount);
+					colcc.setX(PercentageConstraint(xperc));
+					colcc.setWidth(PercentageConstraint(100/xSize));
+					col.setConstraintController(colcc);
+				}
+
+				
+				if(typeof element[rowCount] == "instance")
+				{
+					local clonedObj = clone element[rowCount];
+					col.addChildObject(clonedObj);
+				} 
+				else 
+				{
+					local rowItem = TextObject(this.UI, {
+						size = {x = 0, y = 25},
+						position = {x = 5, y = 0},
+						fontColor = Color().black,
+						text = element[rowCount] //must be a string
+					});
+
+					col.addChildObject(rowItem);
+				}			
+
+				row.addChildObject(col);
+			}
+
+			ArrayOfItems.push(row);
+		}
+
+		return ArrayOfItems;
+	}
+
+	/**
+	prepaint (OVERRIDE)
+	this is the main prepaint function of the displayObject being overriden
+	*/
+	function prepaint()
+	{
+		base.prepaint()
+
+		//should we set the current listControl items?
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint() {}
+}

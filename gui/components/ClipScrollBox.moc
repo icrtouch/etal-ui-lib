@@ -1,0 +1,108 @@
+class ClipScrollBox extends DisplayObject
+{
+	Sub_UI = null;
+	Created_UI = false;
+
+	function constructor(UI, options)
+	{
+		base.constructor(UI, options);
+
+		//here we do what? generate the xml file we will also need to make a new instance of UI to manage paint events for us
+
+		this.Sub_UI = null;
+		this.Created_UI = false;
+
+		this.Sub_UI = GUI();
+	}
+
+	/**
+	prepaint (OVERRIDE)
+	this is the main prepaint function of the displayObject being overriden
+	*/
+	function prepaint()
+	{
+		base.prepaint();
+
+		//as Sale windows are absolutly positioned we need to take into account the root UI window position
+		this.relpos = {
+			x = (this.relpos.x + this.UI.tOurWinSize.LEFT), 
+			y=(this.relpos.y + this.UI.tOurWinSize.TOP)
+		};
+
+		local fileLocation = "C:\\ICRTouch\\Etal\\TouchTickets\\gui_cache\\";
+		local filename = "window_" + this.ID + ".xml";
+		local filefull = fileLocation + "window_"+this.ID + ".xml";
+
+		local fileContent = "<SKIN> <WINDOW left=\"" + this.relpos.x + "\" top=\"" + this.relpos.y + "\" width=\"" + this.size.x + "\" height=\"" + this.size.y + "\"></WINDOW><BACKGROUND image=\"windowbackground.bmp\" TransparentColour=\"00FF00FF\" /> </SKIN>";
+
+		local fileCreated = this.WriteFile(fileContent, filefull);
+
+		//if the file was created we need to make a GUI instance that will handle its draws
+		if(fileCreated)
+		{			
+			if(this.Created_UI == false)
+			{
+				this.Sub_UI.createWindow("gui_cache\\"+filename);
+				this.Created_UI = true;
+				
+				this.Sub_UI.enableWindow();
+
+				//lets add a block in just to see if it works
+				local upgradeBtn = ButtonObject(this.Sub_UI, {
+					identifier = "upgradebtn",
+					zDepth = 2,
+					position = {x = 0,y = 0},
+					size = {x = 400, y = 50},
+					color = Color().primary_btn_bg,
+					text = "Upgrade Ticket Test",
+					fontSize = 30,
+					fontColor = Color().white,
+					onClick = function()
+					{
+						print("Upgrade Button Pressed");
+					},
+				});
+
+				this.Sub_UI.addObject(upgradeBtn);
+			}
+		}
+	}
+
+	function runScrollBoxPaint(nOurWinID)
+	{
+		if(this.Sub_UI.nOurWinID == nOurWinID)
+		{
+			this.Sub_UI.runPaintEvents(this.Sub_UI.nOurWinID);
+		}
+	}
+
+	/**
+	paint (OVERRIDE)
+	this is the main paint function of the displayObject being overriden
+	*/
+	function paint()
+	{
+		//Run the GUI instance paint here
+	}
+
+	function WriteFile(szText,szFileName, szType = "w") 
+	{
+		try
+		{
+			local fileTarget = file(szFileName,szType);
+			for (local nCount=0;nCount<szText.len();nCount++)
+			{
+				fileTarget.writen(szText[nCount],'c');
+			}
+			fileTarget.flush();
+			fileTarget.close();
+			return true;
+		}
+		catch(e)
+		{
+			print(e);
+			print("Write error: " + szFileName);
+			return false;
+		}
+	}
+} 
